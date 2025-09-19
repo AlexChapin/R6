@@ -47,24 +47,6 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
     
 }
 
-void drivetoPoint(double x, double y, double theta){
-    float initx = Enes100.getX();
-    float inity = Enes100.getY();
-    float inittheta = Enes100.getTheta();
-    
-    while (abs(initx-x)>.1||abs(inity-y)>.1){
-        initx = Enes100.getX();
-        inity = Enes100.getY();
-        float deltax = x - initx;
-        float deltay = y - inity;
-        float targetangle = atan2(deltay, deltax);
-        turnToAngle(targetangle);
-        tankDrive(50,true);
-        delay(50);
-        
-    }
-}
-
 void turnToAngle(float angle){//-PI -> PI
     float theta = Enes100.getTheta();
     float speedreduce = 1;
@@ -104,5 +86,23 @@ void turnToAngle(float angle){//-PI -> PI
     }
      Enes100.println("Angle Reached");
      stop();
+}
+
+void drivetoPoint(double x, double y, double theta){
+    float initx = Enes100.getX();
+    float inity = Enes100.getY();
+    float inittheta = Enes100.getTheta();
+    
+    while (abs(initx-x)>.1||abs(inity-y)>.1){
+        initx = Enes100.getX();
+        inity = Enes100.getY();
+        float deltax = x - initx;
+        float deltay = y - inity;
+        float targetangle = atan2(deltay, deltax);
+        turnToAngle(targetangle);
+        tankDrive(50,true);
+        delay(50);
+        
+    }
 }
 
