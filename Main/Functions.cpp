@@ -11,7 +11,7 @@ bool connecttoENES = false;
     int roomNumber = 1116;
     int markerId = 0;
     Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
-    if (Enes100.state()==0x01){
+    if (Enes100.state()=="0x01"){
       Enes100.println("WiFi Connected!");
     }
     else{
