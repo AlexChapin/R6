@@ -1,7 +1,7 @@
 #ifndef Functions_h
 #define Functions_h
 
-void initalizeProgram();
+void initalizeProgram(bool connecttoENES);
 void stop();
 void tankDrive(int percent, bool directioninv);
 void tankTurn(int percent, bool directioninv);

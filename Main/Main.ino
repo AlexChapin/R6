@@ -1,13 +1,18 @@
 #include "Functions.h"
 
 
-
 void setup() {
-initalizeProgram();
+  
+bool connecttoENES = false;
+initalizeProgram(connecttoENES);
+
 }
 
 void loop() {
+
 stop();
+
+
 }
 
 

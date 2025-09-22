@@ -3,26 +3,26 @@
 
 
 
-void initalizeProgram(){ 
-bool connecttoENES = false;
-  if (connecttoENES){
+void initalizeProgram(bool connecttoENES){ 
+    if (connecttoENES){
     int wifiModuleTX = 0;
-    int wifiModuleRX = 0;
-    int roomNumber = 1116;
-    int markerId = 0;
-    Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
-    if (Enes100.state()=="0x01"){
-      Enes100.println("WiFi Connected!");
+        int wifiModuleRX = 0;
+        int roomNumber = 1116;
+        int markerId = 0;
+        Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
+        if (Enes100.state() == 0x01){
+            Enes100.println("WiFi Connected!");
+        }
+        else{
+            Enes100.println("Wifi Failure!!!!!");
+        }
+        Enes100.println("Connected to Vision? " + Enes100.isConnected());
     }
     else{
-      Enes100.println("Wifi Failure!!!!!");
+    Serial.begin(9600);
+    Serial.println("Serial Monitor Connected!");
+    Serial.println("WARNING! Do not attempt to run turnToAngle or driveToPoint without vision system connected!");
     }
-    Enes100.println("Connected to Vision? " + Enes100.isConnected());
-}
-else{
-  Serial.begin(9600);
-  Serial.println("Serial Monitor Connected!");
-}
 }
 
 void stop(){
@@ -77,7 +77,6 @@ void turnToAngle(float angle){//-PI -> PI
             
             if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
              speedreduce = .10;
-             Enes100.print("SpeedRed");
             }
              tankTurn(25 * speedreduce,false);
         }
@@ -104,5 +103,6 @@ void drivetoPoint(double x, double y, double theta){
         delay(50);
         
     }
+    turnToAngle(theta);
 }
 
