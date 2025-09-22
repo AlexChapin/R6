@@ -20,8 +20,24 @@ void initalizeProgram(bool connecttoENES){
     }
     else{
     Serial.begin(9600);
+    Serial.println("");
     Serial.println("Serial Monitor Connected!");
     Serial.println("WARNING! Do not attempt to run turnToAngle or driveToPoint without vision system connected!");
+    }
+}
+
+void serialCommunication(){
+    if (Serial.available() > 0){
+        String receivedMessage = Serial.readStringUntil('\n');
+        receivedMessage.trim();
+
+        if(receivedMessage == "Motor Test"){
+            Serial.println("Motor Testing!");
+        }
+
+        if(receivedMessage == "Sensor Test"){
+            Serial.println("Sensor Testing!");
+        }
     }
 }
 

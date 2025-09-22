@@ -9,10 +9,9 @@ initalizeProgram(connecttoENES);
 }
 
 void loop() {
-
+serialCommunication();
 stop();
-
-
+delay(500);
 }
 
 
