@@ -26,6 +26,25 @@ void initalizeProgram(bool connecttoENES){
     }
 }
 
+void portConfiguration(){
+    pinMode(2, INPUT);
+}
+
+void squareWaveRead() {
+  if (digitalRead(2) == HIGH) {
+    riseTime = micros();
+    if (fallTime > 0) {
+      lowDuration = riseTime - fallTime;
+    }
+  } else {
+    fallTime = micros();
+    if (riseTime > 0) {
+      highDuration = fallTime - riseTime;
+      period = highDuration + lowDuration;
+    }
+  }
+}
+
 void serialCommunication(){
     if (Serial.available() > 0){
         String receivedMessage = Serial.readStringUntil('\n');
