@@ -4,8 +4,10 @@
 
 
 void initalizeProgram(bool connecttoENES){ 
+    Serial.begin(9600);
+    Serial.println("");
     if (connecttoENES){
-    int wifiModuleTX = 0;
+        int wifiModuleTX = 0;
         int wifiModuleRX = 0;
         int roomNumber = 1116;
         int markerId = 0;
@@ -19,8 +21,6 @@ void initalizeProgram(bool connecttoENES){
         Enes100.println("Connected to Vision? " + Enes100.isConnected());
     }
     else{
-    Serial.begin(9600);
-    Serial.println("");
     Serial.println("Serial Monitor Connected!");
     Serial.println("WARNING! Do not attempt to run turnToAngle or driveToPoint without vision system connected!");
     }
@@ -31,6 +31,10 @@ void portConfiguration(){
 }
 
 void squareWaveRead() {
+    volatile unsigned long lastRiseTime = 0;
+    volatile unsigned long lastFallTime = 0;
+    volatile unsigned long pulseWidth = 0;
+    volatile unsigned long period = 0;
   if (digitalRead(2) == HIGH) {
     riseTime = micros();
     if (fallTime > 0) {
