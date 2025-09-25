@@ -31,22 +31,32 @@ void portConfiguration(){
 }
 
 void squareWaveRead() {
-    volatile unsigned long lastRiseTime = 0;
-    volatile unsigned long lastFallTime = 0;
-    volatile unsigned long pulseWidth = 0;
-    volatile unsigned long period = 0;
-  if (digitalRead(2) == HIGH) {
-    riseTime = micros();
-    if (fallTime > 0) {
-      lowDuration = riseTime - fallTime;
+    int numReadings = 50;
+    double total = 0;
+    unsigned long timeHigh;
+    unsigned long timeLow;
+    float dutyCycle;
+    for(int i = 0; i < numReadings; i++){
+        timeHigh = pulseIn(2, HIGH);
+        timeLow = pulseIn(2, LOW);
+        unsigned long totalPeriod = timeHigh + timeLow;
+        if (totalPeriod > 0) {
+            dutyCycle = ((float)timeHigh / totalPeriod) * 100.0;
+        } else {
+            Serial.println("FAILED READING!!!");
+            dutyCycle = 0.0;
+        }
+        total = total + dutyCycle;
     }
-  } else {
-    fallTime = micros();
-    if (riseTime > 0) {
-      highDuration = fallTime - riseTime;
-      period = highDuration + lowDuration;
-    }
-  }
+    String print = "Measured Duty Cycle is ";
+    total = total / numReadings;
+    print += total;
+    total = 10 * round(total / 10);
+    Enes100.mission(CYCLE, total);
+    print += "  Reported Duty Cycle is ";
+    print += total;
+    Serial.println(print);
+     
 }
 
 void serialCommunication(){
@@ -60,6 +70,10 @@ void serialCommunication(){
 
         if(receivedMessage == "Sensor Test"){
             Serial.println("Sensor Testing!");
+        }
+
+        if(receivedMessage == "Square Wave"){
+            squareWaveRead();
         }
     }
 }
