@@ -30,8 +30,9 @@ void portConfiguration(){
     pinMode(2, INPUT);
 }
 
-void squareWaveRead() {
+bool squareWaveRead() {
     int numReadings = 50;
+    int numFailures = 0;
     double total = 0;
     unsigned long timeHigh;
     unsigned long timeLow;
@@ -43,8 +44,11 @@ void squareWaveRead() {
         if (totalPeriod > 0) {
             dutyCycle = ((float)timeHigh / totalPeriod) * 100.0;
         } else {
-            Serial.println("FAILED READING!!!");
+            Serial.println("Square Wave Reading FAILED!");
             dutyCycle = 0.0;
+            if(++numFailures > 3){
+                return false;
+            }
         }
         total = total + dutyCycle;
     }
@@ -56,7 +60,7 @@ void squareWaveRead() {
     print += "  Reported Duty Cycle is ";
     print += total;
     Serial.println(print);
-     
+    return true;
 }
 
 void serialCommunication(){

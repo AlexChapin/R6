@@ -3,6 +3,7 @@
 
 void initalizeProgram(bool connecttoENES);
 void serialCommunication();
+bool squareWaveRead();
 void portConfiguration();
 void stop();
 void tankDrive(int percent, bool directioninv);
