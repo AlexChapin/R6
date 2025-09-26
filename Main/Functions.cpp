@@ -1,6 +1,6 @@
 #include "src\Enes100\Enes100.h"
+#include "src\PID\PID_v1.h"
 #include "Functions.h"
-
 
 
 void initalizeProgram(bool connecttoENES){ 
@@ -105,40 +105,47 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
 }
 
 void turnToAngle(float angle){//-PI -> PI
+    double Kp=2, Ki=0, Kd=0;
+    double Input, Output, Setpoint = angle;
+    PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
     float theta = Enes100.getTheta();
     float speedreduce = 1;
     while(abs(theta-angle)>(0.5*PI/180)){
-        theta = Enes100.getTheta();
-        if ((abs(theta - angle) < (7.5 * PI / 180))){
-            speedreduce = .15;
-        }
-        else{
-            speedreduce = 1;
+        Input = Enes100.getTheta();
+        if (angleController.Compute()){
+            tankTurn(Output, true);
         }
         
-        if(theta > angle && abs(theta-angle)<=PI){
-            tankTurn(25 * speedreduce,false);
-        }
-        else if(theta < angle && abs(theta-angle)<=PI){
-            tankTurn(25 * speedreduce,true);
-        }
-        else if(theta > angle && abs(theta-angle)>PI){
+        // if ((abs(theta - angle) < (7.5 * PI / 180))){
+        //     speedreduce = .15;
+        // }
+        // else{
+        //     speedreduce = 1;
+        // }
+        
+        // if(theta > angle && abs(theta-angle)<=PI){
+        //     tankTurn(25 * speedreduce,false);
+        // }
+        // else if(theta < angle && abs(theta-angle)<=PI){
+        //     tankTurn(25 * speedreduce,true);
+        // }
+        // else if(theta > angle && abs(theta-angle)>PI){
             
-            if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
-             speedreduce = .10;
-             Enes100.print("SpeedRed");
-            }
-            tankTurn(25 * speedreduce,true);
-        }
-        else if(theta < angle && abs(theta-angle)>PI){
+        //     if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
+        //      speedreduce = .10;
+        //      Enes100.print("SpeedRed");
+        //     }
+        //     tankTurn(25 * speedreduce,true);
+        // }
+        // else if(theta < angle && abs(theta-angle)>PI){
             
-            if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
-             speedreduce = .10;
-            }
-             tankTurn(25 * speedreduce,false);
-        }
-        delay(1);
-        Enes100.println(abs(theta-angle));
+        //     if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
+        //      speedreduce = .10;
+        //     }
+        //      tankTurn(25 * speedreduce,false);
+        // }
+        // delay(1);
+        // Enes100.println(abs(theta-angle));
     }
      Enes100.println("Angle Reached");
      stop();
