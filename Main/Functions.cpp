@@ -28,6 +28,7 @@ void initalizeProgram(bool connecttoENES){
 
 void portConfiguration(){
     pinMode(2, INPUT);
+    pinMode(2, INPUT_PULLUP); 
 }
 
 bool squareWaveRead() {
@@ -52,15 +53,19 @@ bool squareWaveRead() {
         }
         total = total + dutyCycle;
     }
-    String print = "Measured Duty Cycle is ";
+    Serial.print("Measured Duty Cycle is ");
     total = total / numReadings;
-    print += total;
+    Serial.print(total);
     total = 10 * round(total / 10);
-    Enes100.mission(CYCLE, total);
-    print += "  Reported Duty Cycle is ";
-    print += total;
-    Serial.println(print);
-    return true;
+    if(total == 10 || total == 30 || total == 50 || total == 70 || total == 90){
+        Enes100.mission(CYCLE, total);
+        Serial.print("  Reported Duty Cycle is ");
+        Serial.print(total);
+        Serial.println("");
+        return true;
+    }
+    return false;
+    Serial.println("Reading Was NOT WITHIN Reportable Range!");
 }
 
 void serialCommunication(){
