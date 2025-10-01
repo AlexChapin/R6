@@ -6,6 +6,7 @@
 void initalizeProgram(bool connecttoENES){ 
     Serial.begin(9600);
     Serial.println("");
+    Serial.println("");
     if (connecttoENES){
         int wifiModuleTX = 0;
         int wifiModuleRX = 0;
@@ -27,7 +28,6 @@ void initalizeProgram(bool connecttoENES){
 }
 
 void portConfiguration(){
-    pinMode(2, INPUT);
     pinMode(2, INPUT_PULLUP); 
 }
 
@@ -74,7 +74,31 @@ void serialCommunication(){
         receivedMessage.trim();
 
         if(receivedMessage == "Motor Test"){
-            Serial.println("Motor Testing!");
+            tankDrive(25, true);
+            Serial.println("Forward at 25%");
+            delay(500);
+            tankDrive(25, false);
+            Serial.println("Backward at 25%");
+            delay(500);
+            tankDrive(75, true);
+            Serial.println("Forward at 75%");
+            delay(500);
+            tankDrive(75, false);
+            Serial.println("Backward at 75%");
+            delay(500);
+            tankTurn(25, true);
+            Serial.println("Turn Right at 25%");
+            delay(500);
+            tankTurn(25, false);
+            Serial.println("Turn Left at 25%");
+            delay(500);
+            tankTurn(75, true);
+            Serial.println("Turn Right at 75%");
+            delay(500);
+            tankTurn(75, false);
+            Serial.println("Turn Left at 75%");
+            delay(500);
+            stop();
         }
 
         if(receivedMessage == "Sensor Test"){

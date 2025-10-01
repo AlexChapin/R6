@@ -11,6 +11,7 @@ portConfiguration();
 void loop() {
 serialCommunication();
 stop();
+delay(10);
 }
 
 
