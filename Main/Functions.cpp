@@ -8,8 +8,8 @@ void initalizeProgram(bool connecttoENES){
     Serial.println("");
     Serial.println("");
     if (connecttoENES){
-        int wifiModuleTX = 0;
-        int wifiModuleRX = 0;
+        int wifiModuleTX = 50;
+        int wifiModuleRX = 51;
         int roomNumber = 1116;
         int markerId = 0;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
@@ -108,6 +108,16 @@ void serialCommunication(){
         if(receivedMessage == "Square Wave"){
             squareWaveRead();
         }
+        if(receivedMessage == "Wifi Data"){
+            Serial.println("Fetching Data from ENES Service...");
+            Serial.print("x = ");
+            Serial.print(Enes100.getX());
+            Serial.print(", y = ");
+            Serial.print(Enes100.getY());
+            Serial.print(", Theta = ");
+            Serial.println(Enes100.getTheta());
+        }
+        
     }
 }
 
@@ -198,4 +208,3 @@ void drivetoPoint(double x, double y, double theta){
     }
     turnToAngle(theta);
 }
-
