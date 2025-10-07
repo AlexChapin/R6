@@ -23,12 +23,12 @@ int getState(){
     return state;
 }
 
-void initalizeProgram(bool connecttoENES){ 
+void initalizeProgram(bool connectToENES){ 
     Serial.begin(9600);
     Serial.println("");
     Serial.println("");
     Serial.println("Serial Monitor Connected!");
-    if (connecttoENES){
+    if (connectToENES){
         int wifiModuleTX = 50;
         int wifiModuleRX = 51;
         int roomNumber = 1116;
