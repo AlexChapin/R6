@@ -254,6 +254,9 @@ void turnToAngle(float angle){//-PI -> PI
             tankTurn(Output, true);
             }
         }
+        else{
+            stop();
+        }
         
         
         // if ((abs(theta - angle) < (7.5 * PI / 180))){
@@ -307,8 +310,9 @@ void driveToPoint(double x, double y, double theta){
             tankDrive(50,true);
             delay(50);
         }
-       
-        
+        else{
+            stop();
+        }     
     }
     turnToAngle(theta);
 }
