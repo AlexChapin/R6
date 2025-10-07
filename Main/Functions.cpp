@@ -1,7 +1,27 @@
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
 #include "Functions.h"
+int state; 
+double lastx;
+double lasty;
+double lastTheta;
 
+void runProgram(bool value){
+    if(value){
+        state = 0;
+    }
+    else{
+        state = -1;
+    }
+}
+
+void incrementState(){
+    state++;
+}
+
+int getState(){
+    return state;
+}
 
 void initalizeProgram(bool connecttoENES){ 
     Serial.begin(9600);
@@ -27,6 +47,63 @@ void initalizeProgram(bool connecttoENES){
     }
 }
 
+void pathfindToObjective(){
+    Serial.println("Path Finding To Objective");
+    int x = Enes100.getX();
+    int y = Enes100.getY();
+    if((x < .4 || x > .9) || (y < 0.25 || y > 1.75)){
+        Serial.println("FAILED to Find Valid Field Location, Ensure Wifi is Connected and Robot is on the Field!");
+        stop();
+        delay(1000);
+        return;
+    }
+    bool top = y > 1;
+
+    switch (top) {
+        case true:
+            turnToAngle(-PI / 2);
+            driveToPoint(0.55, 0.55, -PI / 2);
+    
+        case false:
+            turnToAngle(PI / 2);
+            driveToPoint(0, 0, PI / 2);
+    }
+    state++;
+    return; 
+}
+
+void deployArm(){
+
+}
+
+void deployPinion(){
+
+}
+
+void deployClaw(){
+
+}
+
+void openClawWide(){
+
+}
+
+void pickUpPuck(){
+
+}
+
+void retractPinion(){
+
+}
+
+void retractArm(){
+
+}
+
+void detectBField(){
+
+}
+
 void portConfiguration(){
     pinMode(2, INPUT_PULLUP); 
 }
@@ -48,6 +125,7 @@ bool squareWaveRead() {
             Serial.println("Square Wave Reading FAILED!");
             dutyCycle = 0.0;
             if(++numFailures > 3){
+                Serial.println("4 Failed Squarewave Readings: Data Discarded and NOT Reported to ENES Service!");
                 return false;
             }
         }
@@ -66,6 +144,26 @@ bool squareWaveRead() {
     }
     return false;
     Serial.println("Reading Was NOT WITHIN Reportable Range!");
+}
+
+bool validateXYTheta(float x, float y, float theta){
+    bool result = true;
+    if ((abs(lastx - x) > .1) || (abs(lasty - y) > .1) || (abs(lastTheta - theta) > (PI/8))){
+        result = false;
+    }
+    lastx = x;
+    lasty = y;
+    lastTheta = theta;
+    return result;
+}
+
+bool validateTheta(float theta){
+    bool result = true;
+    if (abs(lastTheta - theta) > (PI/8)){
+        result = false;
+    }
+    lastTheta = theta;
+    return result;
 }
 
 void serialCommunication(){
@@ -148,12 +246,15 @@ void turnToAngle(float angle){//-PI -> PI
     double Input, Output, Setpoint = angle;
     PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
     float theta = Enes100.getTheta();
-    float speedreduce = 1;
+    //float speedreduce = 1;
     while(abs(theta-angle)>(0.5*PI/180)){
-        Input = Enes100.getTheta();
-        if (angleController.Compute()){
+        if(validateTheta(Enes100.getTheta())){
+            Input = Enes100.getTheta();
+            if (angleController.Compute()){
             tankTurn(Output, true);
+            }
         }
+        
         
         // if ((abs(theta - angle) < (7.5 * PI / 180))){
         //     speedreduce = .15;
@@ -190,7 +291,7 @@ void turnToAngle(float angle){//-PI -> PI
      stop();
 }
 
-void drivetoPoint(double x, double y, double theta){
+void driveToPoint(double x, double y, double theta){
     float initx = Enes100.getX();
     float inity = Enes100.getY();
     float inittheta = Enes100.getTheta();
@@ -198,13 +299,17 @@ void drivetoPoint(double x, double y, double theta){
     while (abs(initx-x)>.1||abs(inity-y)>.1){
         initx = Enes100.getX();
         inity = Enes100.getY();
-        float deltax = x - initx;
-        float deltay = y - inity;
-        float targetangle = atan2(deltay, deltax);
-        turnToAngle(targetangle);
-        tankDrive(50,true);
-        delay(50);
+        if(validateXYTheta(Enes100.getX(), Enes100.getY(), Enes100.getTheta())){
+            float deltax = x - initx;
+            float deltay = y - inity;
+            float targetangle = atan2(deltay, deltax);
+            turnToAngle(targetangle);
+            tankDrive(50,true);
+            delay(50);
+        }
+       
         
     }
     turnToAngle(theta);
 }
+
