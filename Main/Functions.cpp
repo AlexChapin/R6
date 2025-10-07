@@ -27,6 +27,7 @@ void initalizeProgram(bool connecttoENES){
     Serial.begin(9600);
     Serial.println("");
     Serial.println("");
+    Serial.println("Serial Monitor Connected!");
     if (connecttoENES){
         int wifiModuleTX = 50;
         int wifiModuleRX = 51;
@@ -42,8 +43,8 @@ void initalizeProgram(bool connecttoENES){
         Enes100.println("Connected to Vision? " + Enes100.isConnected());
     }
     else{
-    Serial.println("Serial Monitor Connected!");
-    Serial.println("WARNING! Do not attempt to run turnToAngle or driveToPoint without vision system connected!");
+        Serial.println("WARNING! It is not Recommended to Run Autonomously Without WiFi! Disabling Autonomous Mode");
+        state = -1;
     }
 }
 
