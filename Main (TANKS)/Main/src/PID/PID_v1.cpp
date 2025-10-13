@@ -64,8 +64,7 @@ bool PID::Compute()
    {
       /*Compute all the working error variables*/
       double input = *myInput;
-      double error = *mySetpoint - input;
-      //double error = (fmod((input - *mySetpoint + 540),360) - 180)*PI/180;
+      double error = (fmod((input - *mySetpoint + 540),360) - 180)*PI/180;
       double dInput = (input - lastInput);
       outputSum+= (ki * error);
 

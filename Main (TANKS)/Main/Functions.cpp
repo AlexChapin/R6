@@ -1,5 +1,6 @@
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
+#include "src\Tank\Tank.h"
 #include "Functions.h"
 int state; 
 double lastx;
@@ -29,13 +30,14 @@ void initalizeProgram(bool connectToENES){
     Serial.println("");
     Serial.println("Serial Monitor Connected!");
     if (connectToENES){
-        int wifiModuleTX = 50;
-        int wifiModuleRX = 51;
+        int wifiModuleTX = 52;
+        int wifiModuleRX = 50;
         int roomNumber = 1116;
-        int markerId = 0;
+        int markerId = 16;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
         if (Enes100.state() == 0x01){
             Enes100.println("WiFi Connected!");
+            Serial.println("WiFi Connected Condition == Good!");
         }
         else{
             Enes100.println("Wifi Failure!!!!!");
@@ -106,7 +108,12 @@ void detectBField(){
 }
 
 void portConfiguration(){
-    pinMode(2, INPUT_PULLUP); 
+    Tank.begin();
+    //pinMode(2, INPUT_PULLUP); 
+}
+
+void driveTANK(){
+    turnToAngle(PI/2);
 }
 
 bool squareWaveRead() {
@@ -149,6 +156,7 @@ bool squareWaveRead() {
 
 bool validateXYTheta(float x, float y, float theta){
     bool result = true;
+    return true;
     if ((abs(lastx - x) > .1) || (abs(lasty - y) > .1) || (abs(lastTheta - theta) > (PI/8))){
         result = false;
     }
@@ -160,6 +168,7 @@ bool validateXYTheta(float x, float y, float theta){
 
 bool validateTheta(float theta){
     bool result = true;
+    return true;
     if (abs(lastTheta - theta) > (PI/8)){
         result = false;
     }
@@ -216,12 +225,15 @@ void serialCommunication(){
             Serial.print(", Theta = ");
             Serial.println(Enes100.getTheta());
         }
+        if(receivedMessage == "Tank Drive"){
+            driveTANK();
+        }
         
     }
 }
 
 void stop(){
-    
+    Tank.turnOffMotors();
 }
 
 void tankDrive(int percent, bool directioninv){ //Forward is True //Backward is False
@@ -229,8 +241,8 @@ void tankDrive(int percent, bool directioninv){ //Forward is True //Backward is 
     if (!directioninv){
         drivingSpeed = drivingSpeed * -1;
     }
-
-    
+    Tank.setLeftMotorPWM(drivingSpeed);
+    Tank.setRightMotorPWM(drivingSpeed);
 }
 
 void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
@@ -238,28 +250,30 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
     if (!directioninv){
         drivingSpeed = drivingSpeed * -1;
     }
-
-    
+    Tank.setLeftMotorPWM(drivingSpeed);
+    Tank.setRightMotorPWM(-drivingSpeed);    
 }
 
 void turnToAngle(float angle){//-PI -> PI
-    double Kp=2, Ki=0, Kd=0;
-    double Input, Output, Setpoint = angle;
-    PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+   double Kp=20, Ki=0, Kd=0;
+    double input, output, setpoint = angle;
+    PID angleController(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
+    angleController.SetMode(AUTOMATIC);
     float theta = Enes100.getTheta();
     //float speedreduce = 1;
-    while(abs(theta-angle)>(0.5*PI/180)){
-        if(validateTheta(Enes100.getTheta())){
-            Input = Enes100.getTheta();
-            if (angleController.Compute()){
-                tankTurn(Output, true);
-            }
-        }
-        else{
-            stop();
-        }
-        
-        
+    while(abs(theta-angle)>(.06)){
+        setpoint = angle;
+        theta = Enes100.getTheta();
+        input = Enes100.getTheta();
+        Serial.print("Error:");
+        Serial.print(abs(theta-angle));
+        Serial.print("  Setpoint:");
+        Serial.print(setpoint);
+        Serial.print("  Output:");
+        Serial.println(output);
+        angleController.Compute();
+        tankTurn(output, true);  
+        delay(50);      
         // if ((abs(theta - angle) < (7.5 * PI / 180))){
         //     speedreduce = .15;
         // }
