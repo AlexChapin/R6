@@ -3,9 +3,10 @@
 #include "src\Tank\Tank.h"
 #include "Functions.h"
 int state; 
-double lastx;
-double lasty;
-double lastTheta;
+//Rotational PID Constants
+double Kp=20, Ki=0, Kd=0;
+double input, output, setpoint;
+PID angleController(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 void runProgram(bool value){
     if(value){
@@ -66,11 +67,13 @@ void pathfindToObjective(){
         case true:
             turnToAngle(-PI / 2);
             driveToPoint(0.55, 0.55, -PI / 2);
+            break;
     
         case false:
             turnToAngle(PI / 2);
             driveToPoint(0, 0, PI / 2);
-    }
+            break; 
+    }   
     state++;
     return; 
 }
@@ -154,28 +157,6 @@ bool squareWaveRead() {
     Serial.println("Reading Was NOT WITHIN Reportable Range!");
 }
 
-bool validateXYTheta(float x, float y, float theta){
-    bool result = true;
-    return true;
-    if ((abs(lastx - x) > .1) || (abs(lasty - y) > .1) || (abs(lastTheta - theta) > (PI/8))){
-        result = false;
-    }
-    lastx = x;
-    lasty = y;
-    lastTheta = theta;
-    return result;
-}
-
-bool validateTheta(float theta){
-    bool result = true;
-    return true;
-    if (abs(lastTheta - theta) > (PI/8)){
-        result = false;
-    }
-    lastTheta = theta;
-    return result;
-}
-
 void serialCommunication(){
     if (Serial.available() > 0){
         String receivedMessage = Serial.readStringUntil('\n');
@@ -255,24 +236,23 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
 }
 
 void turnToAngle(float angle){//-PI -> PI
-   double Kp=20, Ki=0, Kd=0;
-    double input, output, setpoint = angle;
-    PID angleController(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
+    setpoint = angle;
     angleController.SetMode(AUTOMATIC);
     float theta = Enes100.getTheta();
     //float speedreduce = 1;
     while(abs(theta-angle)>(.06)){
         setpoint = angle;
         theta = Enes100.getTheta();
-        input = Enes100.getTheta();
+        input = theta;
         Serial.print("Error:");
         Serial.print(abs(theta-angle));
         Serial.print("  Setpoint:");
         Serial.print(setpoint);
         Serial.print("  Output:");
         Serial.println(output);
-        angleController.Compute();
-        tankTurn(output, true);  
+        if(angleController.Compute()){
+            tankTurn(output, true);  
+        }
         delay(50);      
         // if ((abs(theta - angle) < (7.5 * PI / 180))){
         //     speedreduce = .15;
@@ -317,17 +297,12 @@ void driveToPoint(double x, double y, double theta){
     while (abs(initx-x)>.1||abs(inity-y)>.1){
         initx = Enes100.getX();
         inity = Enes100.getY();
-        if(validateXYTheta(Enes100.getX(), Enes100.getY(), Enes100.getTheta())){
-            float deltax = x - initx;
-            float deltay = y - inity;
-            float targetangle = atan2(deltay, deltax);
-            turnToAngle(targetangle);
-            tankDrive(50,true);
-            delay(50);
-        }
-        else{
-            stop();
-        }     
+        float deltax = x - initx;
+        float deltay = y - inity;
+        float targetangle = atan2(deltay, deltax);
+        turnToAngle(targetangle);
+        tankDrive(50,true);
+        delay(50);
     }
     turnToAngle(theta);
 }
