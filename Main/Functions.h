@@ -4,6 +4,8 @@
 int getState();
 void pathfindToObjective();
 void runProgram(bool value);
+float ultrasonicDistance1();
+float ultrasonicDistance2();
 void initalizeProgram(bool connecttoENES);
 void serialCommunication();
 void portConfiguration();

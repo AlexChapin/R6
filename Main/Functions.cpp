@@ -1,3 +1,4 @@
+#include "src\NewPing\NewPing.h"
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
 #include "Functions.h"
@@ -5,6 +6,14 @@ int state;
 double lastx;
 double lasty;
 double lastTheta;
+
+#define TRIGGER_PIN1 1
+#define ECHO_PIN1 1
+#define MAX_DISTANCE 200
+#define TRIGGER_PIN2 1
+#define ECHO_PIN2 1
+NewPing ultrasonic1(TRIGGER_PIN1, ECHO_PIN1, MAX_DISTANCE);
+NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
 
 void runProgram(bool value){
     if(value){
@@ -46,6 +55,22 @@ void initalizeProgram(bool connectToENES){
         Serial.println("WARNING! It is not Recommended to Run Autonomously Without WiFi! Disabling Autonomous Mode");
         state = -1;
     }
+}
+
+float ultrasonicDistance1(){
+    unsigned int uS = ultrasonic1.ping();
+    if (uS) {
+    return ultrasonic1.convert_cm(uS)
+  }
+  else return NULL
+}
+
+float ultrasonicDistance2(){
+    unsigned int uS = ultrasonic2.ping();
+    if (uS) {
+    return ultrasonic2.convert_cm(uS)
+  }
+  else return NULL
 }
 
 void pathfindToObjective(){
@@ -301,6 +326,30 @@ void driveToPoint(double x, double y, double theta){
     float inittheta = Enes100.getTheta();
     
     while (abs(initx-x)>.1||abs(inity-y)>.1){
+        initx = Enes100.getX();
+        inity = Enes100.getY();
+        if(validateXYTheta(Enes100.getX(), Enes100.getY(), Enes100.getTheta())){
+            float deltax = x - initx;
+            float deltay = y - inity;
+            float targetangle = atan2(deltay, deltax);
+            turnToAngle(targetangle);
+            tankDrive(50,true);
+            delay(50);
+        }
+        else{
+            stop();
+        }     
+    }
+    turnToAngle(theta);
+}
+
+void driveToPointObstructed(double x, double y, double theta){
+    float initx = Enes100.getX();
+    float inity = Enes100.getY();
+    float inittheta = Enes100.getTheta();
+    
+    while (abs(initx-x)>.1||abs(inity-y)>.1){
+
         initx = Enes100.getX();
         inity = Enes100.getY();
         if(validateXYTheta(Enes100.getX(), Enes100.getY(), Enes100.getTheta())){
