@@ -240,25 +240,32 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
 void turnToAngle(float angle){//-PI -> PI
     Setpoint = angle;
     float theta = Enes100.getTheta();
+    float error = theta-angle;
     Input = theta;
     myPID.SetOutputLimits(0.0, 1.0);
     myPID.SetOutputLimits(-1.0, 0.0);
     myPID.SetOutputLimits(-255, 255);
-    delay(100);
+    delay(10);
     myPID.SetMode(AUTOMATIC);
-    //float speedreduce = 1;
     while(abs(theta-angle)>(.05)){
         theta = Enes100.getTheta();
         if(theta != -1){
             Input = theta;
+            error = theta-angle;
+            if (error > PI){
+                error -= 2 * PI;
+            }
+            else if (error < PI){
+                error += 2 * PI;
+            }
             Serial.print("Error:");
-            Serial.print((fmod(((angle-theta) + PI),2*PI) - PI));
+            Serial.print(error);
             Serial.print("  Setpoint:");
             Serial.print(Setpoint);
             Serial.print("  Output:");
             Serial.println(Output);
             myPID.Compute();
-            tankTurn(-Output, true);
+            tankTurn(Output, false);
         }
         delay(10);      
      Enes100.println("Angle Reached");

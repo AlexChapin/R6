@@ -64,13 +64,14 @@ bool PID::Compute()
    {
       /*Compute all the working error variables*/
       double input = *myInput;
-      double error = *mySetpoint - input;
-      if(error > PI){
-         error = error - 2* PI;
+      double error = fmod(*mySetpoint - input, 2 * PI);
+      if (error > PI){
+         error -= 2 * PI;
       }
-      else if (error < -PI){
-         error = error + 2* PI;
+      else if (error < PI){
+         error += 2 * PI;
       }
+
       double dInput = (input - lastInput);
       outputSum+= (ki * error);
 
