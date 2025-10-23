@@ -25,7 +25,7 @@ PID::PID(double* Input, double* Output, double* Setpoint,
     mySetpoint = Setpoint;
     inAuto = false;
 
-    PID::SetOutputLimits(0, 255);				//default output limit corresponds to
+    PID::SetOutputLimits(-255, 255);				//default output limit corresponds to
 												//the arduino pwm limits
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
@@ -64,7 +64,13 @@ bool PID::Compute()
    {
       /*Compute all the working error variables*/
       double input = *myInput;
-      double error = (fmod((input - *mySetpoint + 540),360) - 180)*PI/180;
+      double error = *mySetpoint - input;
+      if(error > PI){
+         error = error - 2* PI;
+      }
+      else if (error < -PI){
+         error = error + 2* PI;
+      }
       double dInput = (input - lastInput);
       outputSum+= (ki * error);
 

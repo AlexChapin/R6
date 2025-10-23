@@ -4,9 +4,11 @@
 #include "Functions.h"
 int state; 
 //Rotational PID Constants
-double Kp=20, Ki=0, Kd=0;
-double input, output, setpoint;
-PID angleController(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
+double Setpoint, Input, Output;
+double Kp=190, Ki=50, Kd=5;
+
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
 
 void runProgram(bool value){
     if(value){
@@ -236,57 +238,32 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
 }
 
 void turnToAngle(float angle){//-PI -> PI
-    setpoint = angle;
-    angleController.SetMode(AUTOMATIC);
+    Setpoint = angle;
     float theta = Enes100.getTheta();
+    Input = theta;
+    myPID.SetOutputLimits(0.0, 1.0);
+    myPID.SetOutputLimits(-1.0, 0.0);
+    myPID.SetOutputLimits(-255, 255);
+    delay(100);
+    myPID.SetMode(AUTOMATIC);
     //float speedreduce = 1;
-    while(abs(theta-angle)>(.06)){
-        setpoint = angle;
+    while(abs(theta-angle)>(.05)){
         theta = Enes100.getTheta();
-        input = theta;
-        Serial.print("Error:");
-        Serial.print(abs(theta-angle));
-        Serial.print("  Setpoint:");
-        Serial.print(setpoint);
-        Serial.print("  Output:");
-        Serial.println(output);
-        if(angleController.Compute()){
-            tankTurn(output, true);  
+        if(theta != -1){
+            Input = theta;
+            Serial.print("Error:");
+            Serial.print((fmod(((angle-theta) + PI),2*PI) - PI));
+            Serial.print("  Setpoint:");
+            Serial.print(Setpoint);
+            Serial.print("  Output:");
+            Serial.println(Output);
+            myPID.Compute();
+            tankTurn(-Output, true);
         }
-        delay(50);      
-        // if ((abs(theta - angle) < (7.5 * PI / 180))){
-        //     speedreduce = .15;
-        // }
-        // else{
-        //     speedreduce = 1;
-        // }
-        
-        // if(theta > angle && abs(theta-angle)<=PI){
-        //     tankTurn(25 * speedreduce,false);
-        // }
-        // else if(theta < angle && abs(theta-angle)<=PI){
-        //     tankTurn(25 * speedreduce,true);
-        // }
-        // else if(theta > angle && abs(theta-angle)>PI){
-            
-        //     if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
-        //      speedreduce = .10;
-        //      Enes100.print("SpeedRed");
-        //     }
-        //     tankTurn(25 * speedreduce,true);
-        // }
-        // else if(theta < angle && abs(theta-angle)>PI){
-            
-        //     if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
-        //      speedreduce = .10;
-        //     }
-        //      tankTurn(25 * speedreduce,false);
-        // }
-        // delay(1);
-        // Enes100.println(abs(theta-angle));
-    }
+        delay(10);      
      Enes100.println("Angle Reached");
      stop();
+    }
 }
 
 void driveToPoint(double x, double y, double theta){
