@@ -17,7 +17,7 @@ void openClawWide();
 void pickUpPuck();
 void retractPinion();
 void retractArm();
-void detectBField();
+bool detectBField();
 void tankDrive(int percent, bool directioninv);
 void tankTurn(int percent, bool directioninv);
 void turnToAngle(float angle);

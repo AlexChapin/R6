@@ -7,11 +7,11 @@ double lastx;
 double lasty;
 double lastTheta;
 
-#define TRIGGER_PIN1 1
-#define ECHO_PIN1 1
+#define TRIGGER_PIN1 8
+#define ECHO_PIN1 9
 #define MAX_DISTANCE 200
-#define TRIGGER_PIN2 1
-#define ECHO_PIN2 1
+#define TRIGGER_PIN2 10
+#define ECHO_PIN2 11
 NewPing ultrasonic1(TRIGGER_PIN1, ECHO_PIN1, MAX_DISTANCE);
 NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
 
@@ -60,17 +60,17 @@ void initalizeProgram(bool connectToENES){
 float ultrasonicDistance1(){
     unsigned int uS = ultrasonic1.ping();
     if (uS) {
-    return ultrasonic1.convert_cm(uS)
+    return ultrasonic1.convert_cm(uS);
   }
-  else return NULL
+  else return -1;
 }
 
 float ultrasonicDistance2(){
     unsigned int uS = ultrasonic2.ping();
     if (uS) {
-    return ultrasonic2.convert_cm(uS)
+    return ultrasonic2.convert_cm(uS);
   }
-  else return NULL
+  else return -1;
 }
 
 void pathfindToObjective(){
@@ -126,12 +126,32 @@ void retractArm(){
 
 }
 
-void detectBField(){
-
+bool detectBField(){
+    int numReadings = 250;
+    float total = 0;
+    for(int i = 0; i < numReadings; i++){
+        total += analogRead(A0);
+        delay(2);
+    }
+    total = ((total / numReadings) / 2.0351) -100;
+    Serial.print("Measured B-Field: ");
+    Serial.print(total);
+    Serial.println("%");
+    if(total < -20 || total > 20){
+        Enes100.mission(MAGNETISM, MAGNETIC);
+        Serial.println("True");
+        return true;
+    } 
+    else{
+        Enes100.mission(MAGNETISM, NOT_MAGNETIC);
+        Serial.println("False");
+        return false;
+    }
 }
 
 void portConfiguration(){
     pinMode(2, INPUT_PULLUP); 
+    pinMode(A0, INPUT);
 }
 
 bool squareWaveRead() {
@@ -196,6 +216,10 @@ void serialCommunication(){
     if (Serial.available() > 0){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
+
+        if(receivedMessage == "B-Field"){
+           detectBField();
+        }
 
         if(receivedMessage == "Motor Test"){
             tankDrive(25, true);
@@ -283,41 +307,10 @@ void turnToAngle(float angle){//-PI -> PI
         else{
             stop();
         }
-        
-        
-        // if ((abs(theta - angle) < (7.5 * PI / 180))){
-        //     speedreduce = .15;
-        // }
-        // else{
-        //     speedreduce = 1;
-        // }
-        
-        // if(theta > angle && abs(theta-angle)<=PI){
-        //     tankTurn(25 * speedreduce,false);
-        // }
-        // else if(theta < angle && abs(theta-angle)<=PI){
-        //     tankTurn(25 * speedreduce,true);
-        // }
-        // else if(theta > angle && abs(theta-angle)>PI){
-            
-        //     if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
-        //      speedreduce = .10;
-        //      Enes100.print("SpeedRed");
-        //     }
-        //     tankTurn(25 * speedreduce,true);
-        // }
-        // else if(theta < angle && abs(theta-angle)>PI){
-            
-        //     if(theta > (PI * 172.5 / 180) || (theta < (PI * -172.5 / 180))){
-        //      speedreduce = .10;
-        //     }
-        //      tankTurn(25 * speedreduce,false);
-        // }
-        // delay(1);
-        // Enes100.println(abs(theta-angle));
     }
-     Enes100.println("Angle Reached");
-     stop();
+    Serial.println("Angle Reached");
+    Enes100.println("Angle Reached");
+    stop();
 }
 
 void driveToPoint(double x, double y, double theta){
