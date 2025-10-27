@@ -58,16 +58,16 @@ void initalizeProgram(bool connectToENES){
 }
 
 float ultrasonicDistance1(){
-    unsigned int uS = ultrasonic1.ping();
-    if (uS) {
+    unsigned int uS = ultrasonic1.ping(MAX_DISTANCE);
+    if (uS != 0) {
     return ultrasonic1.convert_cm(uS);
   }
   else return -1;
 }
 
 float ultrasonicDistance2(){
-    unsigned int uS = ultrasonic2.ping();
-    if (uS) {
+    unsigned int uS = ultrasonic2.ping(MAX_DISTANCE);
+    if (uS != 0) {
     return ultrasonic2.convert_cm(uS);
   }
   else return -1;
