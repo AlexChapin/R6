@@ -1,11 +1,19 @@
+/*
+    Functions.cpp (Primary)
+*/
 #include "src\NewPing\NewPing.h"
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
+#include "Servo.h"
 #include "Functions.h"
 int state; 
-double lastx;
-double lasty;
-double lastTheta;
+
+
+double Setpoint, Input, Output;
+//Rotational PID Constants
+double Kp=190, Ki=50, Kd=5;
+
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 #define TRIGGER_PIN1 8
 #define ECHO_PIN1 9
@@ -14,6 +22,9 @@ double lastTheta;
 #define ECHO_PIN2 11
 NewPing ultrasonic1(TRIGGER_PIN1, ECHO_PIN1, MAX_DISTANCE);
 NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
+Servo armServo;
+Servo clawServo;
+
 
 void runProgram(bool value){
     if(value){
@@ -38,8 +49,8 @@ void initalizeProgram(bool connectToENES){
     Serial.println("");
     Serial.println("Serial Monitor Connected!");
     if (connectToENES){
-        int wifiModuleTX = 50;
-        int wifiModuleRX = 51;
+        int wifiModuleTX = 62;
+        int wifiModuleRX = 63;
         int roomNumber = 1116;
         int markerId = 0;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
@@ -137,7 +148,7 @@ bool detectBField(){
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
-    if(total < -20 || total > 20){
+    if(total < -10 || total > 10){
         Enes100.mission(MAGNETISM, MAGNETIC);
         Serial.println("True");
         return true;
@@ -190,26 +201,6 @@ bool squareWaveRead() {
     }
     return false;
     Serial.println("Reading Was NOT WITHIN Reportable Range!");
-}
-
-bool validateXYTheta(float x, float y, float theta){
-    bool result = true;
-    if ((abs(lastx - x) > .1) || (abs(lasty - y) > .1) || (abs(lastTheta - theta) > (PI/8))){
-        result = false;
-    }
-    lastx = x;
-    lasty = y;
-    lastTheta = theta;
-    return result;
-}
-
-bool validateTheta(float theta){
-    bool result = true;
-    if (abs(lastTheta - theta) > (PI/8)){
-        result = false;
-    }
-    lastTheta = theta;
-    return result;
 }
 
 void serialCommunication(){
@@ -292,25 +283,39 @@ void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
 }
 
 void turnToAngle(float angle){//-PI -> PI
-    double Kp=2, Ki=0, Kd=0;
-    double Input, Output, Setpoint = angle;
-    PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+    Setpoint = angle;
     float theta = Enes100.getTheta();
-    //float speedreduce = 1;
-    while(abs(theta-angle)>(0.5*PI/180)){
-        if(validateTheta(Enes100.getTheta())){
-            Input = Enes100.getTheta();
-            if (angleController.Compute()){
-                tankTurn(Output, true);
+    float error = theta-angle;
+    Input = theta;
+    myPID.SetOutputLimits(0.0, 1.0);
+    myPID.SetOutputLimits(-1.0, 0.0);
+    myPID.SetOutputLimits(-255, 255);
+    delay(10);
+    myPID.SetMode(AUTOMATIC);
+    while(abs(theta-angle)>(.05)){
+        theta = Enes100.getTheta();
+        if(theta != -1){
+            Input = theta;
+            error = theta-angle;
+            if (error > PI){
+                error -= 2 * PI;
             }
+            else if (error < PI){
+                error += 2 * PI;
+            }
+            Serial.print("Error:");
+            Serial.print(error);
+            Serial.print("  Setpoint:");
+            Serial.print(Setpoint);
+            Serial.print("  Output:");
+            Serial.println(Output);
+            myPID.Compute();
+            tankTurn(Output, false);
         }
-        else{
-            stop();
-        }
+        delay(10);      
+     Enes100.println("Angle Reached");
+     stop();
     }
-    Serial.println("Angle Reached");
-    Enes100.println("Angle Reached");
-    stop();
 }
 
 void driveToPoint(double x, double y, double theta){
@@ -321,17 +326,12 @@ void driveToPoint(double x, double y, double theta){
     while (abs(initx-x)>.1||abs(inity-y)>.1){
         initx = Enes100.getX();
         inity = Enes100.getY();
-        if(validateXYTheta(Enes100.getX(), Enes100.getY(), Enes100.getTheta())){
-            float deltax = x - initx;
-            float deltay = y - inity;
-            float targetangle = atan2(deltay, deltax);
-            turnToAngle(targetangle);
-            tankDrive(50,true);
-            delay(50);
-        }
-        else{
-            stop();
-        }     
+        float deltax = x - initx;
+        float deltay = y - inity;
+        float targetangle = atan2(deltay, deltax);
+        turnToAngle(targetangle);
+        tankDrive(50,true);
+        delay(50);
     }
     turnToAngle(theta);
 }
@@ -345,17 +345,12 @@ void driveToPointObstructed(double x, double y, double theta){
 
         initx = Enes100.getX();
         inity = Enes100.getY();
-        if(validateXYTheta(Enes100.getX(), Enes100.getY(), Enes100.getTheta())){
-            float deltax = x - initx;
-            float deltay = y - inity;
-            float targetangle = atan2(deltay, deltax);
-            turnToAngle(targetangle);
-            tankDrive(50,true);
-            delay(50);
-        }
-        else{
-            stop();
-        }     
+        float deltax = x - initx;
+        float deltay = y - inity;
+        float targetangle = atan2(deltay, deltax);
+        turnToAngle(targetangle);
+        tankDrive(50,true);
+        delay(50);  
     }
     turnToAngle(theta);
 }

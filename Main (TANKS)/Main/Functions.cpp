@@ -1,3 +1,6 @@
+/*
+    Functions.cpp (Tanks)
+*/
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
 #include "src\Tank\Tank.h"
@@ -5,7 +8,7 @@
 int state; 
 //Rotational PID Constants
 double Setpoint, Input, Output;
-double Kp=190, Ki=50, Kd=5;
+double Kp=50, Ki=25, Kd=0;
 
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
@@ -36,7 +39,7 @@ void initalizeProgram(bool connectToENES){
         int wifiModuleTX = 52;
         int wifiModuleRX = 50;
         int roomNumber = 1116;
-        int markerId = 16;
+        int markerId = 13;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
         if (Enes100.state() == 0x01){
             Enes100.println("WiFi Connected!");
@@ -244,7 +247,7 @@ void turnToAngle(float angle){//-PI -> PI
     Input = theta;
     myPID.SetOutputLimits(0.0, 1.0);
     myPID.SetOutputLimits(-1.0, 0.0);
-    myPID.SetOutputLimits(-255, 255);
+    myPID.SetOutputLimits(-200, 200);
     delay(10);
     myPID.SetMode(AUTOMATIC);
     while(abs(theta-angle)>(.05)){
@@ -252,12 +255,6 @@ void turnToAngle(float angle){//-PI -> PI
         if(theta != -1){
             Input = theta;
             error = theta-angle;
-            if (error > PI){
-                error -= 2 * PI;
-            }
-            else if (error < PI){
-                error += 2 * PI;
-            }
             Serial.print("Error:");
             Serial.print(error);
             Serial.print("  Setpoint:");
