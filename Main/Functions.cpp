@@ -117,17 +117,22 @@ void pathfindToObjective(){
         case true:
             turnToAngle(-PI / 2);
             driveToPoint(0.55, 0.55, -PI / 2);
+            break;
     
         case false:
             turnToAngle(PI / 2);
             driveToPoint(0, 0, PI / 2);
+            break;
     }
-    state++;
+    incrementState();
     return; 
 }
 
 void deployArm(){
-
+    armServo.write(56);
+    delay(500);
+    clawServo.write(0);
+    incrementState();
 }
 
 void deployPinion(){
@@ -135,15 +140,18 @@ void deployPinion(){
 }
 
 void deployClaw(){
-
+    clawServo.write(100);
+    incrementState();
 }
 
 void openClawWide(){
-
+    clawServo.write(100);
+    incrementState();
 }
 
 void pickUpPuck(){
-
+    clawServo.write(100);
+    incrementState();
 }
 
 void retractPinion(){
@@ -151,7 +159,9 @@ void retractPinion(){
 }
 
 void retractArm(){
-
+    armServo.write(0);
+    delay(500);
+    incrementState();
 }
 
 bool detectBField(){
@@ -180,6 +190,10 @@ bool detectBField(){
 void portConfiguration(){
     pinMode(2, INPUT_PULLUP); 
     pinMode(A0, INPUT);
+    armServo.attach(5);
+    clawServo.attach(6);
+    armServo.write(25);
+    clawServo.write(25);
 }
 
 bool squareWaveRead() {
