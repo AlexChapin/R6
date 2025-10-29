@@ -11,7 +11,7 @@ int state;
 
 //Rotational PID
 double Setpoint, Input, Output;
-double Kp=190, Ki=50, Kd=5;
+double Kp=20, Ki=5, Kd=0;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 //Ultrasonic Configs
@@ -27,18 +27,18 @@ NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
 Servo armServo;
 Servo clawServo;
 
-#define L298AIN1 22
-#define L298AIN2 23
-#define L298AEN 2
-#define L298BIN1 24
-#define L298BIN2 25
-#define L298BEN 3
-#define L298PIN1 26
-#define L298PIN2 27
-#define L298PEN 4
-L298N leftMotor(L298AIN1, L298AIN2, L298AEN);
-L298N rightMotor(L298BIN1, L298BIN2, L298BEN);
-L298N pinionMotor(L298PIN1, L298PIN2, L298PEN);
+#define leftIN1 22
+#define leftIN2 23
+#define leftEN 2
+#define rightIN1 24
+#define rightIN2 25
+#define rightEN 3
+#define pinionIN1 26
+#define pinionIN2 27
+#define pinionEN 4
+L298N leftMotor(leftIN1, leftIN2, leftEN);
+L298N rightMotor(rightIN1, rightIN2, rightEN);
+L298N pinionMotor(pinionIN1, pinionIN2, pinionEN);
 
 double percentToPWM = 255/100;
 
@@ -66,8 +66,8 @@ void initalizeProgram(bool connectToENES){
     Serial.println("");
     Serial.println("Serial Monitor Connected!");
     if (connectToENES){
-        int wifiModuleTX = 62;
-        int wifiModuleRX = 63;
+        int wifiModuleTX = 52;
+        int wifiModuleRX = 50;
         int roomNumber = 1116;
         int markerId = 0;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
@@ -88,7 +88,7 @@ void initalizeProgram(bool connectToENES){
 float ultrasonicDistance1(){
     unsigned int uS = ultrasonic1.ping(MAX_DISTANCE);
     if (uS != 0) {
-    return ultrasonic1.convert_cm(uS);
+    return ultrasonic1.convert_in(uS);
   }
   else return -1;
 }
@@ -96,7 +96,7 @@ float ultrasonicDistance1(){
 float ultrasonicDistance2(){
     unsigned int uS = ultrasonic2.ping(MAX_DISTANCE);
     if (uS != 0) {
-    return ultrasonic2.convert_cm(uS);
+    return ultrasonic2.convert_in(uS);
   }
   else return -1;
 }
@@ -383,7 +383,12 @@ void driveToPointObstructed(double x, double y, double theta){
     float inittheta = Enes100.getTheta();
     
     while (abs(initx-x)>.1||abs(inity-y)>.1){
-
+        if(ultrasonicDistance1() == -1 || ultrasonicDistance1() == -1){
+            stop();
+        }
+        else if(ultrasonicDistance1() < 4 || ultrasonicDistance2() < 4){
+            
+        }
         initx = Enes100.getX();
         inity = Enes100.getY();
         float deltax = x - initx;
