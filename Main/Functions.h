@@ -18,8 +18,8 @@ void pickUpPuck();
 void retractPinion();
 void retractArm();
 bool detectBField();
-void tankDrive(int percent, bool directioninv);
-void tankTurn(int percent, bool directioninv);
+void tankDrive(int percent);
+void tankTurn(int percent);
 void turnToAngle(float angle);
 void driveToPoint(double x, double y, double theta);
 

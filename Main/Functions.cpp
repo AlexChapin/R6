@@ -1,6 +1,7 @@
 /*
     Functions.cpp (Primary)
 */
+#include "src\L298N\L298N.h"
 #include "src\NewPing\NewPing.h"
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
@@ -8,13 +9,12 @@
 #include "Functions.h"
 int state; 
 
-
+//Rotational PID
 double Setpoint, Input, Output;
-//Rotational PID Constants
 double Kp=190, Ki=50, Kd=5;
-
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
+//Ultrasonic Configs
 #define TRIGGER_PIN1 8
 #define ECHO_PIN1 9
 #define MAX_DISTANCE 200
@@ -22,8 +22,25 @@ PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 #define ECHO_PIN2 11
 NewPing ultrasonic1(TRIGGER_PIN1, ECHO_PIN1, MAX_DISTANCE);
 NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
+
+//Servo Configs
 Servo armServo;
 Servo clawServo;
+
+#define L298AIN1 22
+#define L298AIN2 23
+#define L298AEN 2
+#define L298BIN1 24
+#define L298BIN2 25
+#define L298BEN 3
+#define L298PIN1 26
+#define L298PIN2 27
+#define L298PEN 4
+L298N leftMotor(L298AIN1, L298AIN2, L298AEN);
+L298N rightMotor(L298BIN1, L298BIN2, L298BEN);
+L298N pinionMotor(L298PIN1, L298PIN2, L298PEN);
+
+double percentToPWM = 255/100;
 
 
 void runProgram(bool value){
@@ -213,28 +230,28 @@ void serialCommunication(){
         }
 
         if(receivedMessage == "Motor Test"){
-            tankDrive(25, true);
+            tankDrive(25 * percentToPWM);
             Serial.println("Forward at 25%");
             delay(500);
-            tankDrive(25, false);
+            tankDrive(-25 * percentToPWM);
             Serial.println("Backward at 25%");
             delay(500);
-            tankDrive(75, true);
+            tankDrive(75 * percentToPWM);
             Serial.println("Forward at 75%");
             delay(500);
-            tankDrive(75, false);
+            tankDrive(-75 * percentToPWM);
             Serial.println("Backward at 75%");
             delay(500);
-            tankTurn(25, true);
+            tankTurn(25 * percentToPWM);
             Serial.println("Turn Right at 25%");
             delay(500);
-            tankTurn(25, false);
+            tankTurn(-25 * percentToPWM);
             Serial.println("Turn Left at 25%");
             delay(500);
-            tankTurn(75, true);
+            tankTurn(75 * percentToPWM);
             Serial.println("Turn Right at 75%");
             delay(500);
-            tankTurn(75, false);
+            tankTurn(-75 * percentToPWM);
             Serial.println("Turn Left at 75%");
             delay(500);
             stop();
@@ -264,22 +281,32 @@ void stop(){
     
 }
 
-void tankDrive(int percent, bool directioninv){ //Forward is True //Backward is False
-    double drivingSpeed = 255*percent/100;
-    if (!directioninv){
-        drivingSpeed = drivingSpeed * -1;
+void tankDrive(int pwm){
+    if(pwm<0){
+        pwm = abs(pwm);
+        rightMotor.backward();
+        leftMotor.backward();
     }
-
-    
+    else{
+        rightMotor.forward();
+        leftMotor.forward();
+    }
+    leftMotor.setSpeed(pwm);
+    rightMotor.setSpeed(pwm);
 }
 
-void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
-    double drivingSpeed = 255*percent/100;
-    if (!directioninv){
-        drivingSpeed = drivingSpeed * -1;
+void tankTurn(int pwm){// Positive Number to the right, Negative to the left
+    if(pwm<0){
+        pwm = abs(pwm);
+        rightMotor.forward();
+        leftMotor.backward();
     }
-
-    
+    else{
+        rightMotor.backward();
+        leftMotor.forward();
+    }
+    leftMotor.setSpeed(pwm);
+    rightMotor.setSpeed(pwm);
 }
 
 void turnToAngle(float angle){//-PI -> PI
@@ -310,7 +337,7 @@ void turnToAngle(float angle){//-PI -> PI
             Serial.print("  Output:");
             Serial.println(Output);
             myPID.Compute();
-            tankTurn(Output, false);
+            tankTurn(Output);
         }
         delay(10);      
      Enes100.println("Angle Reached");
@@ -330,7 +357,7 @@ void driveToPoint(double x, double y, double theta){
         float deltay = y - inity;
         float targetangle = atan2(deltay, deltax);
         turnToAngle(targetangle);
-        tankDrive(50,true);
+        tankDrive(50);
         delay(50);
     }
     turnToAngle(theta);
@@ -349,7 +376,7 @@ void driveToPointObstructed(double x, double y, double theta){
         float deltay = y - inity;
         float targetangle = atan2(deltay, deltax);
         turnToAngle(targetangle);
-        tankDrive(50,true);
+        tankDrive(50);
         delay(50);  
     }
     turnToAngle(theta);
