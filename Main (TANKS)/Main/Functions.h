@@ -17,7 +17,7 @@ void retractPinion();
 void retractArm();
 void detectBField();
 void tankDrive(int percent, bool directioninv);
-void tankTurn(int percent, bool directioninv);
+void tankTurn(int PWM);
 void turnToAngle(float angle);
 void driveToPoint(double x, double y, double theta);
 

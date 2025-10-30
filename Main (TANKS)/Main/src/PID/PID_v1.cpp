@@ -12,7 +12,7 @@
 #endif
 
 #include "PID_v1.h"
-#include <math.h>
+
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
@@ -25,7 +25,7 @@ PID::PID(double* Input, double* Output, double* Setpoint,
     mySetpoint = Setpoint;
     inAuto = false;
 
-    PID::SetOutputLimits(-255, 255);				//default output limit corresponds to
+    PID::SetOutputLimits(0, 255);				//default output limit corresponds to
 												//the arduino pwm limits
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
@@ -65,9 +65,6 @@ bool PID::Compute()
       /*Compute all the working error variables*/
       double input = *myInput;
       double error = *mySetpoint - input;
-      if(error>PI){
-         error = error - (2 * PI);
-      }
       double dInput = (input - lastInput);
       outputSum+= (ki * error);
 
@@ -92,7 +89,8 @@ bool PID::Compute()
       /*Remember some variables for next time*/
       lastInput = input;
       lastTime = now;
-	    return true;
+	   return true;
+      
    }
    else return false;
 }

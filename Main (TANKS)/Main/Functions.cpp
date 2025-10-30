@@ -8,7 +8,7 @@
 int state; 
 //Rotational PID Constants
 double Setpoint, Input, Output;
-double Kp=50, Ki=25, Kd=0;
+double Kp=200, Ki=75, Kd=5;
 
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
@@ -39,7 +39,7 @@ void initalizeProgram(bool connectToENES){
         int wifiModuleTX = 52;
         int wifiModuleRX = 50;
         int roomNumber = 1116;
-        int markerId = 13;
+        int markerId = 16;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
         if (Enes100.state() == 0x01){
             Enes100.println("WiFi Connected!");
@@ -121,7 +121,7 @@ void portConfiguration(){
 }
 
 void driveTANK(){
-    turnToAngle(PI/2);
+    driveToPoint(1.55, 0.55, 0);
 }
 
 bool squareWaveRead() {
@@ -180,16 +180,16 @@ void serialCommunication(){
             tankDrive(75, false);
             Serial.println("Backward at 75%");
             delay(500);
-            tankTurn(25, true);
+            tankTurn(25);
             Serial.println("Turn Right at 25%");
             delay(500);
-            tankTurn(25, false);
+            tankTurn(25);
             Serial.println("Turn Left at 25%");
             delay(500);
-            tankTurn(75, true);
+            tankTurn(75);
             Serial.println("Turn Right at 75%");
             delay(500);
-            tankTurn(75, false);
+            tankTurn(75);
             Serial.println("Turn Left at 75%");
             delay(500);
             stop();
@@ -231,13 +231,9 @@ void tankDrive(int percent, bool directioninv){ //Forward is True //Backward is 
     Tank.setRightMotorPWM(drivingSpeed);
 }
 
-void tankTurn(int percent, bool directioninv){ //Right is True //Left is False
-    double drivingSpeed = 255*percent/100;
-    if (!directioninv){
-        drivingSpeed = drivingSpeed * -1;
-    }
-    Tank.setLeftMotorPWM(drivingSpeed);
-    Tank.setRightMotorPWM(-drivingSpeed);    
+void tankTurn(int PWM){ //Right is True //Left is False
+    Tank.setLeftMotorPWM(-PWM);
+    Tank.setRightMotorPWM(PWM);    
 }
 
 void turnToAngle(float angle){//-PI -> PI
@@ -255,14 +251,12 @@ void turnToAngle(float angle){//-PI -> PI
         if(theta != -1){
             Input = theta;
             error = theta-angle;
-            Serial.print("Error:");
-            Serial.print(error);
-            Serial.print("  Setpoint:");
-            Serial.print(Setpoint);
-            Serial.print("  Output:");
-            Serial.println(Output);
             myPID.Compute();
-            tankTurn(Output, false);
+            tankTurn(Output);
+            Serial.print("Error: ");
+            Serial.print(error);
+            Serial.print("   Output: ");
+            Serial.println(Output);
         }
         delay(10);      
      Enes100.println("Angle Reached");
@@ -271,20 +265,35 @@ void turnToAngle(float angle){//-PI -> PI
 }
 
 void driveToPoint(double x, double y, double theta){
+    while(Enes100.getX() == -1){
+        delay(5);
+    }
     float initx = Enes100.getX();
     float inity = Enes100.getY();
     float inittheta = Enes100.getTheta();
-    
-    while (abs(initx-x)>.1||abs(inity-y)>.1){
+    myPID.SetTunings(200, 300, 5);
+    while (abs(initx-x)>.05 || abs(inity-y)>.05 || initx == -1 || inity == -1){
         initx = Enes100.getX();
         inity = Enes100.getY();
+        while(initx == -1 || inity == -1){
+            initx = Enes100.getX();
+            inity = Enes100.getY();
+            delay(10);
+            Serial.print("Stuck");
+            stop();
+        }
         float deltax = x - initx;
         float deltay = y - inity;
         float targetangle = atan2(deltay, deltax);
         turnToAngle(targetangle);
-        tankDrive(50,true);
-        delay(50);
+        Serial.print("Driving   deltax: ");
+        Serial.print(abs(initx - x));
+        Serial.print("deltay: ");
+        Serial.println(abs(inity - y));
+        tankDrive(50,false);
+        delay(200);
     }
+    myPID.SetTunings(200, 75, 5);
     turnToAngle(theta);
 }
 
