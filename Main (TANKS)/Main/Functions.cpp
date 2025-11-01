@@ -124,6 +124,14 @@ void driveTANK(){
     driveToPoint(1.55, 0.55, 0);
 }
 
+void turn90(){
+    float targetAngle = Enes100.getTheta() - (PI / 2);
+    if(targetAngle < -PI){
+        targetAngle += 2 * PI;
+    }
+    turnToAngle(targetAngle);
+}
+
 bool squareWaveRead() {
     int numReadings = 50;
     int numFailures = 0;
@@ -214,6 +222,13 @@ void serialCommunication(){
         if(receivedMessage == "Tank Drive"){
             driveTANK();
         }
+        if(receivedMessage == "Turn"){
+            turn90();
+        }
+        if(receivedMessage == "Example Run"){
+            pathfindToObjective();
+            driveToPoint(3,1,0);
+        }
         
     }
 }
@@ -251,8 +266,9 @@ void turnToAngle(float angle){//-PI -> PI
         if(theta != -1){
             Input = theta;
             error = theta-angle;
-            myPID.Compute();
-            tankTurn(Output);
+            if(myPID.Compute()){
+                tankTurn(Output);
+            }
             Serial.print("Error: ");
             Serial.print(error);
             Serial.print("   Output: ");

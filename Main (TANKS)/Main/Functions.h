@@ -16,6 +16,8 @@ void pickUpPuck();
 void retractPinion();
 void retractArm();
 void detectBField();
+void turn90();
+void driveTANK();
 void tankDrive(int percent, bool directioninv);
 void tankTurn(int PWM);
 void turnToAngle(float angle);
