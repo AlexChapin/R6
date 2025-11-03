@@ -63,7 +63,7 @@ void pathfindToObjective(){
     if((x < .4 || x > .9) || (y < 0.25 || y > 1.75)){
         Serial.println("FAILED to Find Valid Field Location, Ensure Wifi is Connected and Robot is on the Field!");
         stop();
-        delay(1000);
+        delay(100);
         return;
     }
     bool top = y > 1;
@@ -79,7 +79,7 @@ void pathfindToObjective(){
             driveToPoint(0, 0, PI / 2);
             break; 
     }   
-    state++;
+    //state++;
     return; 
 }
 
@@ -228,6 +228,12 @@ void serialCommunication(){
         if(receivedMessage == "Example Run"){
             pathfindToObjective();
             driveToPoint(3,1,0);
+        }
+        
+        if(receivedMessage == "DriveObstructed"){
+            if(driveToPointObstructed(3,1,0)){
+                Enes100.print("Sucessful!!!!")
+            }        
         }
         
     }
