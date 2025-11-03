@@ -9,7 +9,7 @@ void serialCommunication();
 void portConfiguration();
 void stop();
 void deployArm();
-bool driveToPointObstructed();
+bool driveToPointObstructed(double x, double y, double theta);
 void deployPinion();
 void deployClaw();
 void openClawWide();

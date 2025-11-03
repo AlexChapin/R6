@@ -27,7 +27,7 @@ void incrementState(){
 }
 
 int getState(){
-    return state;
+    return -1;
 }
 
 void initalizeProgram(bool connectToENES){ 
@@ -232,7 +232,7 @@ void serialCommunication(){
         
         if(receivedMessage == "DriveObstructed"){
             if(driveToPointObstructed(3,1,0)){
-                Enes100.print("Sucessful!!!!")
+                Enes100.print("Sucessful!!!!");
             }        
         }
         
@@ -342,25 +342,25 @@ bool driveToPointObstructed(double x, double y, double theta){
         }
         float deltax = x - initx;
         float deltay = y - inity;
-        float targetangle = atan2(deltay, deltax);
+        float targetAngle = atan2(deltay, deltax);
         if(Tank.readDistanceSensor(1) < .25){
             if(inity >= 1){
                 angleOffset = -(PI/32);
             }
             while(Tank.readDistanceSensor(1) < .3){
-                turnToAngle(targetAngle + angleOffset)
+                turnToAngle(targetAngle + angleOffset);
                 if (angleOffset >= 0){
                     angleOffset += (PI/32);
                 }
                 else{
                     angleOffset -= (PI/32);
                 }
-                if angleOffset > (PI/3){
+                if (angleOffset > (PI/3)){
                     angleOffset = -(PI/32);
                 }
-                else if angleOffset < - (PI/3){
+                else if (angleOffset < - (PI/3)){
                     Serial.print("Passable Angle Finding FAILED");
-                    return;
+                    return false;
                 }
             }
             obstacleFound = true;
@@ -378,7 +378,7 @@ bool driveToPointObstructed(double x, double y, double theta){
             }
         }
         else{
-            turnToAngle(targetangle);
+            turnToAngle(targetAngle);
         }
         Serial.print("Driving   deltax: ");
         Serial.print(abs(initx - x));
@@ -389,4 +389,5 @@ bool driveToPointObstructed(double x, double y, double theta){
     }
     angleController.SetTunings(200, 75, 5);
     turnToAngle(theta);
+    return true;
 }
