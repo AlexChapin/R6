@@ -363,7 +363,8 @@ bool driveToPointObstructed(double x, double y, double theta){
                     return;
                 }
             }
-            
+            obstacleFound = true;
+            cyclesSinceObstacleFound = 0;
         }
         else if(obstacleFound){
             cyclesSinceObstacleFound++;
@@ -389,5 +390,3 @@ bool driveToPointObstructed(double x, double y, double theta){
     angleController.SetTunings(200, 75, 5);
     turnToAngle(theta);
 }
-
-
