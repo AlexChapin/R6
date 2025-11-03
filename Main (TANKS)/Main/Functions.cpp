@@ -10,7 +10,7 @@ int state;
 double Setpoint, Input, Output;
 double Kp=200, Ki=75, Kd=5;
 
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 
 void runProgram(bool value){
@@ -256,17 +256,17 @@ void turnToAngle(float angle){//-PI -> PI
     float theta = Enes100.getTheta();
     float error = theta-angle;
     Input = theta;
-    myPID.SetOutputLimits(0.0, 1.0);
-    myPID.SetOutputLimits(-1.0, 0.0);
-    myPID.SetOutputLimits(-200, 200);
+    angleController.SetOutputLimits(0.0, 1.0);
+    angleController.SetOutputLimits(-1.0, 0.0);
+    angleController.SetOutputLimits(-200, 200);
     delay(10);
-    myPID.SetMode(AUTOMATIC);
+    angleController.SetMode(AUTOMATIC);
     while(abs(theta-angle)>(.05)){
         theta = Enes100.getTheta();
         if(theta != -1){
             Input = theta;
             error = theta-angle;
-            if(myPID.Compute()){
+            if(angleController.Compute()){
                 tankTurn(Output);
             }
             Serial.print("Error: ");
@@ -287,7 +287,7 @@ void driveToPoint(double x, double y, double theta){
     float initx = Enes100.getX();
     float inity = Enes100.getY();
     float inittheta = Enes100.getTheta();
-    myPID.SetTunings(200, 300, 5);
+    angleController.SetTunings(200, 300, 5);
     while (abs(initx-x)>.05 || abs(inity-y)>.05 || initx == -1 || inity == -1){
         initx = Enes100.getX();
         inity = Enes100.getY();
@@ -309,7 +309,79 @@ void driveToPoint(double x, double y, double theta){
         tankDrive(50,false);
         delay(200);
     }
-    myPID.SetTunings(200, 75, 5);
+    angleController.SetTunings(200, 75, 5);
     turnToAngle(theta);
 }
+
+bool driveToPointObstructed(double x, double y, double theta){
+    while(Enes100.getX() == -1){
+        delay(5);
+    }
+    float initx = Enes100.getX();
+    float inity = Enes100.getY();
+    float inittheta = Enes100.getTheta();
+    angleController.SetTunings(200, 300, 5);
+    float angleOffset = 0;
+    bool obstacleFound = false;
+    int cyclesSinceObstacleFound;
+    while (abs(initx-x)>.04 || abs(inity-y)>.04 || initx == -1 || inity == -1){
+        initx = Enes100.getX();
+        inity = Enes100.getY();
+        while(initx == -1 || inity == -1){
+            initx = Enes100.getX();
+            inity = Enes100.getY();
+            delay(10);
+            Serial.print("Stuck");
+            stop();
+        }
+        float deltax = x - initx;
+        float deltay = y - inity;
+        float targetangle = atan2(deltay, deltax);
+        if(Tank.readDistanceSensor(1) < .25){
+            if(inity >= 1){
+                angleOffset = -(PI/32);
+            }
+            while(Tank.readDistanceSensor(1) < .3){
+                turnToAngle(targetAngle + angleOffset)
+                if (angleOffset >= 0){
+                    angleOffset += (PI/32);
+                }
+                else{
+                    angleOffset -= (PI/32);
+                }
+                if angleOffset > (PI/3){
+                    angleOffset = -(PI/32);
+                }
+                else if angleOffset < - (PI/3){
+                    Serial.print("Passable Angle Finding FAILED");
+                    return;
+                }
+            }
+            
+        }
+        else if(obstacleFound){
+            cyclesSinceObstacleFound++;
+            if (cyclesSinceObstacleFound > 5){
+                angleOffset = 0;
+                cyclesSinceObstacleFound = 0;
+                obstacleFound = false;
+            }
+            else{
+                turnToAngle(targetAngle + angleOffset);
+            }
+        }
+        else{
+            turnToAngle(targetangle);
+        }
+        Serial.print("Driving   deltax: ");
+        Serial.print(abs(initx - x));
+        Serial.print("deltay: ");
+        Serial.println(abs(inity - y));
+        tankDrive(50,false);
+        delay(200);
+    }
+    angleController.SetTunings(200, 75, 5);
+    turnToAngle(theta);
+}
+
 
