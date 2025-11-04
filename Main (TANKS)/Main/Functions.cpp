@@ -39,7 +39,7 @@ void initalizeProgram(bool connectToENES){
         int wifiModuleTX = 52;
         int wifiModuleRX = 50;
         int roomNumber = 1116;
-        int markerId = 16;
+        int markerId = 534;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
         if (Enes100.state() == 0x01){
             Enes100.println("WiFi Connected!");
@@ -121,7 +121,7 @@ void portConfiguration(){
 }
 
 void driveTANK(){
-    driveToPoint(1.55, 0.55, 0);
+    driveToPoint(3, 0.55, 0);
 }
 
 void turn90(){
@@ -343,11 +343,11 @@ bool driveToPointObstructed(double x, double y, double theta){
         float deltax = x - initx;
         float deltay = y - inity;
         float targetAngle = atan2(deltay, deltax);
-        if(Tank.readDistanceSensor(1) < .25){
+        if(Tank.readDistanceSensor(7) < .25){
             if(inity >= 1){
                 angleOffset = -(PI/32);
             }
-            while(Tank.readDistanceSensor(1) < .3){
+            while(Tank.readDistanceSensor(7) < .3){
                 turnToAngle(targetAngle + angleOffset);
                 if (angleOffset >= 0){
                     angleOffset += (PI/32);
@@ -365,16 +365,17 @@ bool driveToPointObstructed(double x, double y, double theta){
             }
             obstacleFound = true;
             cyclesSinceObstacleFound = 0;
+            Serial.print("Obstacle Found!!");
         }
         else if(obstacleFound){
             cyclesSinceObstacleFound++;
-            if (cyclesSinceObstacleFound > 5){
+            if (cyclesSinceObstacleFound > 30){
                 angleOffset = 0;
                 cyclesSinceObstacleFound = 0;
                 obstacleFound = false;
             }
             else{
-                turnToAngle(targetAngle + angleOffset);
+                turnToAngle(targetAngle + angleOffset + ((angleOffset/angleOffset)*(PI/6)));
             }
         }
         else{
