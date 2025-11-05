@@ -2,6 +2,7 @@
 #define Functions_h
 
 int getState();
+void incrementState();
 void pathfindToObjective();
 void runProgram(bool value);
 float ultrasonicDistance1();

@@ -11,34 +11,43 @@ initalizeProgram(connecttoENES);
 portConfiguration();
 }
 
+
 void loop() {
   serialCommunication();
   stop();
   delay(10);
   if(getState() > 0){
-    if(getState() == 0){
-      pathfindToObjective();
-    }
-    else if(getState() == 1){
-
-    }
-    else if(getState() == 2){
-
-    }
-    else if(getState() == 3){
-
-    }
-    else if(getState() == 4){
-
-    }
-    else if(getState() == 5){
-
-    }
-    else if(getState() == 6){
-
-    }
-    else if(getState() == 7){
-
+    switch(getState()){
+      case 1:
+        incrementState();
+        break;
+      case 2:
+        incrementState();
+        break;
+      case 3:
+        incrementState();
+        break;
+      case 4:
+        incrementState();
+        break;
+      case 5:
+        incrementState();
+        break;
+      case 6:
+        incrementState();
+        break;
+      case 7:
+        incrementState();
+        break;
+      case 8:
+        incrementState();
+        break;
+      case 9:
+        incrementState();
+        break;
+      case 10:
+        incrementState();
+        break;
     }
   }
 }
