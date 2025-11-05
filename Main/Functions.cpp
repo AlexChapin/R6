@@ -244,30 +244,30 @@ void serialCommunication(){
         }
 
         if(receivedMessage == "Motor Test"){
-            tankDrive(25 * percentToPWM);
-            Serial.println("Forward at 25%");
-            delay(500);
-            tankDrive(-25 * percentToPWM);
-            Serial.println("Backward at 25%");
-            delay(500);
+            tankDrive(50 * percentToPWM);
+            Serial.println("Forward at 50%");
+            delay(5000);
+            tankDrive(-50 * percentToPWM);
+            Serial.println("Backward at 50%");
+            delay(5000);
             tankDrive(75 * percentToPWM);
             Serial.println("Forward at 75%");
-            delay(500);
+            delay(5000);
             tankDrive(-75 * percentToPWM);
             Serial.println("Backward at 75%");
-            delay(500);
+            delay(5000);
             tankTurn(25 * percentToPWM);
             Serial.println("Turn Right at 25%");
-            delay(500);
+            delay(5000);
             tankTurn(-25 * percentToPWM);
             Serial.println("Turn Left at 25%");
-            delay(500);
+            delay(5000);
             tankTurn(75 * percentToPWM);
             Serial.println("Turn Right at 75%");
-            delay(500);
+            delay(5000);
             tankTurn(-75 * percentToPWM);
             Serial.println("Turn Left at 75%");
-            delay(500);
+            delay(5000);
             stop();
         }
 
@@ -292,7 +292,8 @@ void serialCommunication(){
 }
 
 void stop(){
-    
+    rightMotor.stop();
+    leftMotor.stop();
 }
 
 void tankDrive(int pwm){
