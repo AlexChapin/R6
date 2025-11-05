@@ -9,7 +9,6 @@ void serialCommunication();
 void portConfiguration();
 void stop();
 void deployArm();
-bool driveToPointObstructed(double x, double y, double theta);
 void deployPinion();
 void deployClaw();
 void openClawWide();
@@ -19,10 +18,11 @@ void retractArm();
 void detectBField();
 void turn90();
 void driveTANK();
-void tankDrive(int percent, bool directioninv);
+void tankDrive(int percent);
 void tankTurn(int PWM);
 void turnToAngle(float angle);
 void driveToPoint(double x, double y, double theta);
+bool driveToPointObstructed(double x, double y, double theta);
 
 
 #endif

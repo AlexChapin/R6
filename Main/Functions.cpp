@@ -27,6 +27,7 @@ NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
 Servo armServo;
 Servo clawServo;
 
+//Motor Configs
 #define leftIN1 22
 #define leftIN2 23
 #define leftEN 2
@@ -253,11 +254,11 @@ void serialCommunication(){
         }
 
         if(receivedMessage == "Motor Test"){
-            tankDrive(50 * percentToPWM);
-            Serial.println("Forward at 50%");
+            tankDrive(25 * percentToPWM);
+            Serial.println("Forward at 25%");
             delay(5000);
-            tankDrive(-50 * percentToPWM);
-            Serial.println("Backward at 50%");
+            tankDrive(-25 * percentToPWM);
+            Serial.println("Backward at 25%");
             delay(5000);
             tankDrive(75 * percentToPWM);
             Serial.println("Forward at 75%");
@@ -315,7 +316,7 @@ void tankDrive(int pwm){
         rightMotor.forward();
         leftMotor.forward();
     }
-    if(pwm => 0 && pwm <= 255){
+    if(pwm >= 0 && pwm <= 255){
         leftMotor.setSpeed(pwm);
         rightMotor.setSpeed(pwm);
     }
@@ -331,7 +332,7 @@ void tankTurn(int pwm){// Positive Number to the right, Negative to the left
         rightMotor.backward();
         leftMotor.forward();
     }
-    if(pwm => 0 && pwm <= 255){
+    if(pwm >= 0 && pwm <= 255){
         leftMotor.setSpeed(pwm);
         rightMotor.setSpeed(pwm);
     }
@@ -375,7 +376,7 @@ void driveToPoint(double x, double y, double theta){
     float inittheta = Enes100.getTheta();
     float deltax = x - initx;
     float deltay = y - inity;
-    float targetangle = atan2(deltay, deltax);
+    float targetAngle = atan2(deltay, deltax);
     turnToAngle(targetAngle);
     angleController.SetTunings(200, 300, 5);  //TUNE
     while (abs(initx-x)>.05 || abs(inity-y)>.05 || initx == -1 || inity == -1){
@@ -383,7 +384,7 @@ void driveToPoint(double x, double y, double theta){
         inity = Enes100.getY();
         deltax = x - initx;
         deltay = y - inity;
-        targetangle = atan2(deltay, deltax);
+        targetAngle = atan2(deltay, deltax);
         while(initx == -1 || inity == -1){
             initx = Enes100.getX();
             inity = Enes100.getY();
@@ -391,12 +392,12 @@ void driveToPoint(double x, double y, double theta){
             Serial.print("Stuck");
             stop();
         }
-        turnToAngle(targetangle);
+        turnToAngle(targetAngle);
         Serial.print("Driving   deltax: ");
         Serial.print(abs(initx - x));
         Serial.print("deltay: ");
         Serial.println(abs(inity - y));
-        tankDrive(50,false);
+        tankDrive(50);
         delay(200);
     }
     angleController.SetTunings(200, 75, 0); //TUNE
@@ -474,7 +475,7 @@ bool driveToPointObstructed(double x, double y, double theta){
         Serial.print(abs(initx - x));
         Serial.print("deltay: ");
         Serial.println(abs(inity - y));
-        tankDrive(50,false);
+        tankDrive(50);
         delay(200);
     }
     angleController.SetTunings(200, 75, 0); //TUNE
