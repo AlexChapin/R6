@@ -315,8 +315,10 @@ void tankDrive(int pwm){
         rightMotor.forward();
         leftMotor.forward();
     }
-    leftMotor.setSpeed(pwm);
-    rightMotor.setSpeed(pwm);
+    if(pwm => 0 && pwm <= 255){
+        leftMotor.setSpeed(pwm);
+        rightMotor.setSpeed(pwm);
+    }
 }
 
 void tankTurn(int pwm){// Positive Number to the right, Negative to the left
@@ -342,7 +344,7 @@ void turnToAngle(float angle){//-PI -> PI
     Input = theta;
     angleController.SetOutputLimits(0.0, 1.0);
     angleController.SetOutputLimits(-1.0, 0.0);
-    angleController.SetOutputLimits(-200, 200);
+    angleController.SetOutputLimits(-255, 255);
     delay(10);
     angleController.SetMode(AUTOMATIC);
     while(abs(theta-angle)>(.05)){
