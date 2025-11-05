@@ -12,7 +12,7 @@
 #endif
 
 #include "PID_v1.h"
-#include <math.h>
+
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
@@ -65,7 +65,6 @@ bool PID::Compute()
       /*Compute all the working error variables*/
       double input = *myInput;
       double error = *mySetpoint - input;
-      //double error = (fmod((input - *mySetpoint + 540),360) - 180)*PI/180;
       double dInput = (input - lastInput);
       outputSum+= (ki * error);
 
@@ -90,7 +89,8 @@ bool PID::Compute()
       /*Remember some variables for next time*/
       lastInput = input;
       lastTime = now;
-	    return true;
+	   return true;
+      
    }
    else return false;
 }
