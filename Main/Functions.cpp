@@ -37,9 +37,9 @@ Servo clawServo;
 #define pinionIN1 26
 #define pinionIN2 27
 #define pinionEN 4
-L298N leftMotor(leftIN1, leftIN2, leftEN);
-L298N rightMotor(rightIN1, rightIN2, rightEN);
-L298N pinionMotor(pinionIN1, pinionIN2, pinionEN);
+// L298N leftMotor(leftIN1, leftIN2, leftEN);
+// L298N rightMotor(rightIN1, rightIN2, rightEN);
+// L298N pinionMotor(pinionIN1, pinionIN2, pinionEN);
 
 double percentToPWM = 255/100;
 
@@ -169,7 +169,7 @@ void retractPinion(){
 }
 
 void retractArm(){
-    armServo.write(0);
+    armServo.write(90);
     delay(500);
     incrementState();
 }
@@ -200,10 +200,16 @@ bool detectBField(){
 void portConfiguration(){
     pinMode(2, INPUT_PULLUP); 
     pinMode(A0, INPUT);
+    pinMode(leftIN1, OUTPUT);
+    pinMode(leftIN2, OUTPUT);
+    pinMode(leftEN, OUTPUT);
+    pinMode(rightIN1, OUTPUT);
+    pinMode(rightIN2, OUTPUT);
+    pinMode(rightEN, OUTPUT);
     armServo.attach(5);
     clawServo.attach(6);
     armServo.write(25);
-    clawServo.write(25);
+    clawServo.write(90);
 }
 
 bool squareWaveRead() {
@@ -254,30 +260,30 @@ void serialCommunication(){
         }
 
         if(receivedMessage == "Motor Test"){
-            tankDrive(25 * percentToPWM);
+            tankDrive(100 * percentToPWM);
             Serial.println("Forward at 25%");
             delay(5000);
             tankDrive(-25 * percentToPWM);
             Serial.println("Backward at 25%");
             delay(5000);
-            tankDrive(75 * percentToPWM);
-            Serial.println("Forward at 75%");
-            delay(5000);
-            tankDrive(-75 * percentToPWM);
-            Serial.println("Backward at 75%");
-            delay(5000);
-            tankTurn(25 * percentToPWM);
-            Serial.println("Turn Right at 25%");
-            delay(5000);
-            tankTurn(-25 * percentToPWM);
-            Serial.println("Turn Left at 25%");
-            delay(5000);
-            tankTurn(75 * percentToPWM);
-            Serial.println("Turn Right at 75%");
-            delay(5000);
-            tankTurn(-75 * percentToPWM);
-            Serial.println("Turn Left at 75%");
-            delay(5000);
+            // tankDrive(75 * percentToPWM);
+            // Serial.println("Forward at 75%");
+            // delay(5000);
+            // tankDrive(-75 * percentToPWM);
+            // Serial.println("Backward at 75%");
+            // delay(5000);
+            // tankTurn(25 * percentToPWM);
+            // Serial.println("Turn Right at 25%");
+            // delay(5000);
+            // tankTurn(-25 * percentToPWM);
+            // Serial.println("Turn Left at 25%");
+            // delay(5000);
+            // tankTurn(75 * percentToPWM);
+            // Serial.println("Turn Right at 75%");
+            // delay(5000);
+            // tankTurn(-75 * percentToPWM);
+            // Serial.println("Turn Left at 75%");
+            // delay(5000);
             stop();
         }
 
@@ -297,45 +303,54 @@ void serialCommunication(){
             Serial.print(", Theta = ");
             Serial.println(Enes100.getTheta());
         }
-        
     }
 }
 
 void stop(){
-    rightMotor.stop();
-    leftMotor.stop();
+    digitalWrite(leftIN1, LOW);
+    digitalWrite(leftIN2, LOW);
+    digitalWrite(rightIN1, LOW);
+    digitalWrite(rightIN2, LOW);
 }
 
 void tankDrive(int pwm){
     if(pwm<0){
-        pwm = abs(pwm);
-        rightMotor.backward();
-        leftMotor.backward();
+        digitalWrite(leftIN1, HIGH);
+        digitalWrite(leftIN2, LOW);
+        digitalWrite(rightIN1, HIGH);
+        digitalWrite(rightIN2, LOW);
+        analogWrite(leftEN, pwm);
+        analogWrite(rightEN, pwm);
     }
     else{
-        rightMotor.forward();
-        leftMotor.forward();
-    }
-    if(pwm >= 0 && pwm <= 255){
-        leftMotor.setSpeed(pwm);
-        rightMotor.setSpeed(pwm);
+        Serial.print("Motors Forward");
+        digitalWrite(leftIN1, LOW);
+        digitalWrite(leftIN2, HIGH);
+        digitalWrite(rightIN1, LOW);
+        digitalWrite(rightIN2, HIGH);
+        analogWrite(leftEN, pwm);
+        analogWrite(rightEN, pwm);
     }
 }
 
 void tankTurn(int pwm){// Positive Number to the right, Negative to the left
     if(pwm<0){
         pwm = abs(pwm);
-        rightMotor.forward();
-        leftMotor.backward();
-    }
-    else{
-        rightMotor.backward();
-        leftMotor.forward();
-    }
-    if(pwm >= 0 && pwm <= 255){
-        leftMotor.setSpeed(pwm);
-        rightMotor.setSpeed(pwm);
-    }
+        digitalWrite(leftIN1, LOW);
+        digitalWrite(leftIN2, HIGH);
+        digitalWrite(rightIN1, HIGH);
+        digitalWrite(rightIN2, LOW);
+        analogWrite(leftEN, pwm);
+        analogWrite(rightEN, pwm);
+     }
+     else{
+        digitalWrite(leftIN1, LOW);
+        digitalWrite(leftIN2, HIGH);
+        digitalWrite(rightIN1, LOW);
+        digitalWrite(rightIN2, HIGH);
+        analogWrite(leftEN, pwm);
+        analogWrite(rightEN, pwm);
+     }
 }
 
 void turnToAngle(float angle){//-PI -> PI
