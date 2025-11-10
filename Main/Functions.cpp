@@ -1,7 +1,6 @@
 /*
     Functions.cpp (Primary)
 */
-#include "src\L298N\L298N.h"
 #include "src\NewPing\NewPing.h"
 #include "src\Enes100\Enes100.h"
 #include "src\PID\PID_v1.h"
@@ -11,7 +10,7 @@ int state;
 
 //Rotational PID
 double Setpoint, Input, Output;
-double Kp=20, Ki=5, Kd=0; //TUNE
+double Kp=5, Ki=0, Kd=0; //TUNE
 PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 //Ultrasonic Configs
@@ -493,7 +492,7 @@ bool driveToPointObstructed(double x, double y, double theta){
         tankDrive(50);
         delay(200);
     }
-    angleController.SetTunings(200, 75, 0); //TUNE
+    angleController.SetTunings(Kp, Ki, Kd); //TUNE
     turnToAngle(theta);
     return true;
 }
