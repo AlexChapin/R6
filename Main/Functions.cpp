@@ -344,8 +344,8 @@ void tankTurn(int pwm){// Positive Number to the right, Negative to the left
         analogWrite(rightEN, pwm);
      }
      else{
-        digitalWrite(leftIN1, LOW);
-        digitalWrite(leftIN2, HIGH);
+        digitalWrite(leftIN1, HIGH);
+        digitalWrite(leftIN2, LOW);
         digitalWrite(rightIN1, LOW);
         digitalWrite(rightIN2, HIGH);
         analogWrite(leftEN, pwm);
