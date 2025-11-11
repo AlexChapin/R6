@@ -10,7 +10,7 @@ int state;
 
 //Rotational PID
 double Setpoint, Input, Output;
-double Kp=5, Ki=0, Kd=0; //TUNE
+double Kp=15, Ki=10, Kd=3; //TUNE
 PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 //Ultrasonic Configs
@@ -36,9 +36,6 @@ Servo clawServo;
 #define pinionIN1 26
 #define pinionIN2 27
 #define pinionEN 4
-// L298N leftMotor(leftIN1, leftIN2, leftEN);
-// L298N rightMotor(rightIN1, rightIN2, rightEN);
-// L298N pinionMotor(pinionIN1, pinionIN2, pinionEN);
 
 double percentToPWM = 255/100;
 
@@ -66,18 +63,18 @@ void initalizeProgram(bool connectToENES){
     Serial.println("");
     Serial.println("Serial Monitor Connected!");
     if (connectToENES){
-        int wifiModuleTX = 52;
-        int wifiModuleRX = 50;
+        int wifiModuleTX = 53;
+        int wifiModuleRX = 51;
         int roomNumber = 1116;
-        int markerId = 0;
+        int markerId = 200;
         Enes100.begin("R6", DATA, markerId, roomNumber, wifiModuleTX, wifiModuleRX);
         if (Enes100.state() == 0x01){
-            Enes100.println("WiFi Connected!");
+            Serial.println("WiFi Connected!");
         }
         else{
-            Enes100.println("Wifi Failure!!!!!");
+            Serial.println("Wifi Failure!!!!!");
         }
-        Enes100.println("Connected to Vision? " + Enes100.isConnected());
+        Enes100.println("R6 Connected to Vision!");
     }
     else{
         Serial.println("WARNING! It is not Recommended to Run Autonomously Without WiFi! Disabling Autonomous Mode");
@@ -253,9 +250,18 @@ void serialCommunication(){
     if (Serial.available() > 0){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
+        if(receivedMessage == "Claw"){
+            clawServo.write(90+30);
+            delay(5000);
+            clawServo.write(90+50);
+        }
 
         if(receivedMessage == "B-Field"){
            detectBField();
+        }
+
+        if(receivedMessage == "pid"){
+            turnToAngle(0);
         }
 
         if(receivedMessage == "Motor Test"){
@@ -288,6 +294,9 @@ void serialCommunication(){
 
         if(receivedMessage == "Sensor Test"){
             Serial.println("Sensor Testing!");
+            Serial.println(ultrasonicDistance1());
+            Serial.println(ultrasonicDistance2());
+            Serial.println(unifiedUltrasonicClosest());
         }
 
         if(receivedMessage == "Square Wave"){
@@ -367,6 +376,9 @@ void turnToAngle(float angle){//-PI -> PI
         if(theta != -1){
             Input = theta;
             error = theta-angle;
+            if(error>(2*PI)){
+                continue;
+            }
             if(angleController.Compute()){
                 tankTurn(Output);
             }
