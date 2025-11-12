@@ -19,10 +19,14 @@ void pickUpPuck();
 void retractPinion();
 void retractArm();
 bool detectBField();
+void pathfindToLog();
+void driveOverLog()
 void tankDrive(int pwm);
 void tankTurn(int pwm);
 void turnToAngle(float angle);
 void driveToPoint(double x, double y, double theta);
+bool driveToPointObstructed(double x, double y, double theta);
+
 
 
 #endif

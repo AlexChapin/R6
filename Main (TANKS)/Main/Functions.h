@@ -3,7 +3,7 @@
 
 int getState();
 void pathfindToObjective();
-void runProgram(bool value);
+void runProgram(bool runAuton);
 void initalizeProgram(bool connecttoENES);
 void serialCommunication();
 void portConfiguration();

@@ -16,7 +16,7 @@ PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 //Ultrasonic Configs
 #define TRIGGER_PIN1 8
 #define ECHO_PIN1 9
-#define MAX_DISTANCE 200
+#define MAX_DISTANCE 50
 #define TRIGGER_PIN2 10
 #define ECHO_PIN2 11
 NewPing ultrasonic1(TRIGGER_PIN1, ECHO_PIN1, MAX_DISTANCE);
@@ -40,8 +40,8 @@ Servo clawServo;
 double percentToPWM = 255/100;
 
 
-void runProgram(bool value){
-    if(value){
+void runProgram(bool runAuton){
+    if(runAuton){
         state = 0;
     }
     else{
@@ -183,13 +183,44 @@ bool detectBField(){
     Serial.println("%");
     if(total < -10 || total > 10){
         Enes100.mission(MAGNETISM, MAGNETIC);
-        Serial.println("True");
+        Serial.println("B-Field True");
         return true;
     } 
     else{
         Enes100.mission(MAGNETISM, NOT_MAGNETIC);
-        Serial.println("False");
+        Serial.println("B-Field False");
         return false;
+    }
+}
+
+void pathfindToLog(){
+    float targetX = .5;
+    float targetY = 4;
+    float targetTheta = 0;
+    if(!driveToPointObstructed(targetX, targetY, targetTheta)){
+        tankDrive(-25);
+        delay(250);
+        stop();
+        pathfindToLog();
+    }
+    incrementState();
+}
+
+void driveOverLog(){
+    turnToAngle(0);
+    float y = Enes100.getY();
+    int cyclesElapsed = 0;
+    while(y < 4.2){
+        tankDrive(255);
+        delay(10);
+        cyclesElapsed++;
+        if(cyclesElapsed > 75){
+            driveToPoint(.5, 4, 0);
+            break;
+        }    
+    }
+    if(y < 4.2){
+        driveOverLog();
     }
 }
 
@@ -377,6 +408,7 @@ void turnToAngle(float angle){//-PI -> PI
             Input = theta;
             error = theta-angle;
             if(error>(2*PI)){
+                delay(30);
                 continue;
             }
             if(angleController.Compute()){
@@ -426,7 +458,7 @@ void driveToPoint(double x, double y, double theta){
         tankDrive(50);
         delay(200);
     }
-    angleController.SetTunings(200, 75, 0); //TUNE
+    angleController.SetTunings(200, 75, 0);
     turnToAngle(theta);
 }
 
@@ -504,7 +536,7 @@ bool driveToPointObstructed(double x, double y, double theta){
         tankDrive(50);
         delay(200);
     }
-    angleController.SetTunings(Kp, Ki, Kd); //TUNE
+    angleController.SetTunings(Kp, Ki, Kd);
     turnToAngle(theta);
     return true;
 }
