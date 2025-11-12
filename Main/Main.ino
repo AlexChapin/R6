@@ -21,6 +21,7 @@ void loop() {
       case 1:
         incrementState();
         break;
+        pathfindToObjective();
       case 2:
         incrementState();
         break;

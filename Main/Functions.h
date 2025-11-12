@@ -20,7 +20,7 @@ void retractPinion();
 void retractArm();
 bool detectBField();
 void pathfindToLog();
-void driveOverLog()
+void driveOverLog();
 void tankDrive(int pwm);
 void tankTurn(int pwm);
 void turnToAngle(float angle);

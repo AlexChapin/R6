@@ -42,7 +42,7 @@ double percentToPWM = 255/100;
 
 void runProgram(bool runAuton){
     if(runAuton){
-        state = 0;
+        state = 1;
     }
     else{
         state = -1;
@@ -127,7 +127,7 @@ void pathfindToObjective(){
     
         case false:
             turnToAngle(PI / 2);
-            driveToPoint(0, 0, PI / 2);
+            driveToPoint(.55, 1.45, PI / 2);
             break;
     }
     incrementState();
@@ -396,6 +396,7 @@ void turnToAngle(float angle){//-PI -> PI
     Setpoint = angle;
     float theta = Enes100.getTheta();
     float error = theta-angle;
+    float correctedError = 0;
     Input = theta;
     angleController.SetOutputLimits(0.0, 1.0);
     angleController.SetOutputLimits(-1.0, 0.0);
@@ -407,6 +408,12 @@ void turnToAngle(float angle){//-PI -> PI
         if(theta != -1){
             Input = theta;
             error = theta-angle;
+            if(error > PI){
+                correctedError = error - (2 * PI);
+            }
+            if(error < -PI){
+                correctedError = error + (2 * PI);
+            }
             if(error>(2*PI)){
                 delay(30);
                 continue;
@@ -416,7 +423,11 @@ void turnToAngle(float angle){//-PI -> PI
             }
             Serial.print("Error: ");
             Serial.print(error);
-            Serial.print("   Output: ");
+            Serial.print("    Corrected Error: ");
+            Serial.print(correctedError);
+            Serial.print("    Field Reported Value");
+            Serial.print(theta);
+            Serial.print("    Output: ");
             Serial.println(Output);
         }
         delay(10);      
