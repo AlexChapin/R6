@@ -15,6 +15,7 @@ PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 double prevX;
 double prevY;
+double prevTargetAngle;
 
 //Ultrasonic Configs
 #define TRIGGER_PIN1 8
@@ -450,29 +451,31 @@ void turnToAngle(float angle){//-PI -> PI
     }
 }
 
-void driveToPoint(double x, double y, double theta){
+bool driveToPoint(double x, double y, double theta){
     while(Enes100.getX() == -1){
         delay(5);
     }
+    int timeStuck = 0;
     float initx = Enes100.getX();
     float inity = Enes100.getY();
     float inittheta = Enes100.getTheta();
     float deltax = x - initx;
     float deltay = y - inity;
     float targetAngle = atan2(deltay, deltax);
+    prevTargetAngle = targetAngle;
     turnToAngle(targetAngle);
-    angleController.SetTunings(100, 150, 3);
+    angleController.SetTunings(100, 200, 30);
     while (abs(initx-x)>.075 || abs(inity-y)>.075 || initx == -1 || inity == -1){
-        if(abs(initx - prevX) > .1 || abs(inity - prevY) > .1){
-            Serial.println("Invalid XY");
-            delay(30);
-            continue;
-        }
         initx = Enes100.getX();
         inity = Enes100.getY();
         deltax = x - initx;
         deltay = y - inity;
         targetAngle = atan2(deltay, deltax);
+        if(abs(targetAngle - prevTargetAngle) > (PI / 4)){
+            stop();
+            delay(50);
+            continue;
+        }
         while(initx == -1 || inity == -1){
             initx = Enes100.getX();
             inity = Enes100.getY();
@@ -490,7 +493,7 @@ void driveToPoint(double x, double y, double theta){
         prevX = initx;
         prevY = inity;
     }
-    angleController.SetTunings(200, 75, 0);
+    angleController.SetTunings(Kp, Ki, Kd);
     turnToAngle(theta);
 }
 
