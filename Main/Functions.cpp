@@ -464,7 +464,7 @@ bool driveToPoint(double x, double y, double theta){
     float targetAngle = atan2(deltay, deltax);
     prevTargetAngle = targetAngle;
     turnToAngle(targetAngle);
-    angleController.SetTunings(100, 200, 30);
+    angleController.SetTunings(100, 400, 30);
     while (abs(initx-x)>.075 || abs(inity-y)>.075 || initx == -1 || inity == -1){
         initx = Enes100.getX();
         inity = Enes100.getY();
@@ -474,6 +474,10 @@ bool driveToPoint(double x, double y, double theta){
         if(abs(targetAngle - prevTargetAngle) > (PI / 4)){
             stop();
             delay(50);
+            timeStuck++;
+            if(timeStuck > 15){
+                return false;
+            }
             continue;
         }
         while(initx == -1 || inity == -1){
@@ -486,15 +490,17 @@ bool driveToPoint(double x, double y, double theta){
         turnToAngle(targetAngle);
         Serial.print("Driving   deltax: ");
         Serial.print(abs(initx - x));
-        Serial.print("deltay: ");
+        Serial.print("   deltay: ");
         Serial.println(abs(inity - y));
-        tankDrive(75);
+        tankDrive(65);
         delay(100);
         prevX = initx;
         prevY = inity;
+        timeStuck = 0;
     }
     angleController.SetTunings(Kp, Ki, Kd);
     turnToAngle(theta);
+    return true;
 }
 
 bool driveToPointObstructed(double x, double y, double theta){
