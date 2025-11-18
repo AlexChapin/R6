@@ -201,8 +201,8 @@ bool detectBField(){
 }
 
 void pathfindToLog(){
-    float targetX = 3.1;
-    float targetY = .5;
+    float targetX = .5;
+    float targetY = 3.7;
     float targetTheta = 0;
     if(!driveToPointObstructed(targetX, targetY, targetTheta)){
         tankDrive(-25);
@@ -214,20 +214,12 @@ void pathfindToLog(){
 }
 
 void driveOverLog(){
-    //turnToAngle(0);
     float y = Enes100.getY();
     int cyclesElapsed = 0;
-    while(y < 4.2){
+    while(y < 4.05){
+        y = Enes100.getY();
         tankDrive(255);
-        delay(100);
-        cyclesElapsed++;
-        // if(cyclesElapsed > 75){
-        //     driveToPoint(.5, 4, 0);
-        //     break;
-        // }    
-    }
-    if(y < 4.2){
-        driveOverLog();
+        delay(100); 
     }
 }
 
@@ -289,7 +281,7 @@ void serialCommunication(){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
         if(receivedMessage == "Claw"){
-            clawServo.write(90+30);
+            clawServo.write(60);
             delay(5000);
             clawServo.write(90+50);
         }
@@ -544,20 +536,24 @@ bool driveToPointObstructed(double x, double y, double theta){
             stop();
         }
         Enes100.println(unifiedUltrasonicClosest());
-        if(unifiedUltrasonicClosest() < 7){
+        if(unifiedUltrasonicClosest() <= 7){
+            Serial.println("Obstacle FOUND!");
             if(inity >= 1){
-                angleOffset = -(PI/32);
+                angleOffset = -(PI/16);
+            }
+            else{
+                angleOffset = (PI/16);
             }
             while(unifiedUltrasonicClosest() < 10){
                 turnToAngle(targetAngle + angleOffset);
                 if (angleOffset >= 0){
-                    angleOffset += (PI/32);
+                    angleOffset += (PI/16);
                 }
                 else{
-                    angleOffset -= (PI/32);
+                    angleOffset -= (PI/16);
                 }
                 if (angleOffset > (PI/3)){
-                    angleOffset = -(PI/32);
+                    angleOffset = -(PI/16);
                 }
                 else if (angleOffset < - (PI/3)){
                     Serial.print("Passable Angle Finding FAILED");
@@ -566,7 +562,7 @@ bool driveToPointObstructed(double x, double y, double theta){
             }
             obstacleFound = true;
             cyclesSinceObstacleFound = 0;
-            Serial.print("Obstacle Found!!");
+            Serial.print("Obstacle Safe Path!!");
         }
         else if(obstacleFound){
             cyclesSinceObstacleFound++;
