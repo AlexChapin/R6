@@ -10,7 +10,7 @@ int state;
 
 //Rotational PID
 double Setpoint, Input, Output;
-double Kp=150, Ki=20, Kd=3; //TUNE
+double Kp=15, Ki=30, Kd=60; //TUNE
 PID angleController(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 double prevX;
@@ -113,28 +113,28 @@ float unifiedUltrasonicClosest(){
 }
 
 void pathfindToObjective(){
-    Serial.println("Path Finding To Objective");
+    Enes100.println("Path Finding To Objective");
     float x = Enes100.getX();
     float y = Enes100.getY();
     Serial.print(x);
     Serial.println(y);
-    if(x < .2 || x > 1.2|| y < 0.15 || y > 1.85){
-        Serial.println("FAILED to Find Valid Field Location, Ensure Wifi is Connected and Robot is on the Field!");
-        stop();
-        delay(1000);
-        return;
-    }
+    // if(x < .2 || x > 1.2|| y < 0.15 || y > 2){
+    //     Enes100.println("FAILED to Find Valid Field Location, Ensure Wifi is Connected and Robot is on the Field!");
+    //     stop();
+    //     delay(1000);
+    //     return;
+    // }
     bool top = y > 1;
 
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            driveToPoint(0.55, 0.55, -PI / 2);
+            driveToPoint(0.26, 0.52, -PI / 2);
             break;
     
         case false:
             turnToAngle(PI / 2);
-            driveToPoint(.55, 1.45, PI / 2);
+            driveToPoint(0.33, 1.55, PI / 2);
             break;
     }
     incrementState();
@@ -201,8 +201,8 @@ bool detectBField(){
 }
 
 void pathfindToLog(){
-    float targetX = .5;
-    float targetY = 4;
+    float targetX = 3.1;
+    float targetY = .5;
     float targetTheta = 0;
     if(!driveToPointObstructed(targetX, targetY, targetTheta)){
         tankDrive(-25);
@@ -214,17 +214,17 @@ void pathfindToLog(){
 }
 
 void driveOverLog(){
-    turnToAngle(0);
+    //turnToAngle(0);
     float y = Enes100.getY();
     int cyclesElapsed = 0;
     while(y < 4.2){
         tankDrive(255);
-        delay(10);
+        delay(100);
         cyclesElapsed++;
-        if(cyclesElapsed > 75){
-            driveToPoint(.5, 4, 0);
-            break;
-        }    
+        // if(cyclesElapsed > 75){
+        //     driveToPoint(.5, 4, 0);
+        //     break;
+        // }    
     }
     if(y < 4.2){
         driveOverLog();
@@ -302,6 +302,10 @@ void serialCommunication(){
             turnToAngle(0);
         }
 
+        if(receivedMessage == "log"){
+            driveOverLog();
+        }
+
         if(receivedMessage == "Motor Test"){
             tankDrive(100 * percentToPWM);
             Serial.println("Forward at 25%");
@@ -351,7 +355,7 @@ void serialCommunication(){
         }
 
         if(receivedMessage == "Pathfind"){
-            pathfindToObjective();
+            pathfindToLog();
         }
     }
 }
@@ -373,7 +377,6 @@ void tankDrive(int pwm){
         analogWrite(rightEN, pwm);
     }
     else{
-        Serial.print("Motors Forward");
         digitalWrite(leftIN1, LOW);
         digitalWrite(leftIN2, HIGH);
         digitalWrite(rightIN1, LOW);
@@ -410,12 +413,12 @@ void turnToAngle(float angle){//-PI -> PI
     float preverror = theta-angle;
     int timeStuck = 0;
     Input = theta;
-    angleController.SetOutputLimits(0.0, 1.0);
-    angleController.SetOutputLimits(-1.0, 0.0);
-    angleController.SetOutputLimits(-255, 255);
+    angleController.SetMode(MANUAL);
+    Output = 0;
     delay(10);
+    angleController.SetOutputLimits(-255, 255);
     angleController.SetMode(AUTOMATIC);
-    while(abs(theta-angle)>(.05)){
+    while(abs(theta-angle)>(.1)){
         prevX = Enes100.getX();
         prevY = Enes100.getY();
         theta = Enes100.getTheta();
@@ -437,6 +440,13 @@ void turnToAngle(float angle){//-PI -> PI
             if(angleController.Compute()){
                 tankTurn(Output);
             }
+            if((abs(Output) > 250 && error < (PI / 2)) || (error > 0 && preverror < 0) || (preverror < 0 && error > 0)){
+                angleController.SetMode(MANUAL);
+                Output = 0;
+                delay(10);
+                angleController.SetOutputLimits(-255, 255);
+                angleController.SetMode(AUTOMATIC);
+            }
             Serial.print("Error: ");
             Serial.print(error);
             Serial.print("    Field Reported Value");
@@ -445,8 +455,7 @@ void turnToAngle(float angle){//-PI -> PI
             Serial.println(Output);
             preverror = error;
         }
-        delay(100);      
-     Enes100.println("Angle Reached");
+        delay(100);
      stop();
     }
 }
@@ -464,7 +473,7 @@ bool driveToPoint(double x, double y, double theta){
     float targetAngle = atan2(deltay, deltax);
     prevTargetAngle = targetAngle;
     turnToAngle(targetAngle);
-    angleController.SetTunings(100, 400, 30);
+    angleController.SetTunings(15, 60, 60);
     while (abs(initx-x)>.075 || abs(inity-y)>.075 || initx == -1 || inity == -1){
         initx = Enes100.getX();
         inity = Enes100.getY();
@@ -475,6 +484,8 @@ bool driveToPoint(double x, double y, double theta){
             stop();
             delay(50);
             timeStuck++;
+            targetAngle = atan2(deltay, deltax);
+            Serial.print("Atan Diff");
             if(timeStuck > 15){
                 return false;
             }
@@ -487,6 +498,7 @@ bool driveToPoint(double x, double y, double theta){
             Serial.print("Stuck");
             stop();
         }
+        prevTargetAngle = targetAngle;
         turnToAngle(targetAngle);
         Serial.print("Driving   deltax: ");
         Serial.print(abs(initx - x));
@@ -498,7 +510,7 @@ bool driveToPoint(double x, double y, double theta){
         prevY = inity;
         timeStuck = 0;
     }
-    angleController.SetTunings(Kp, Ki, Kd);
+    //angleController.SetTunings(Kp, Ki, Kd);
     turnToAngle(theta);
     return true;
 }
@@ -514,11 +526,11 @@ bool driveToPointObstructed(double x, double y, double theta){
     float deltay = y - inity;
     float targetAngle = atan2(deltay, deltax);
     turnToAngle(targetAngle);
-    angleController.SetTunings(200, 300, 5);   //TUNE
+    angleController.SetTunings(15, 60, 60);
     float angleOffset = 0;
     bool obstacleFound = false;
     int cyclesSinceObstacleFound;
-    while (abs(initx-x)>.04 || abs(inity-y)>.04 || initx == -1 || inity == -1){
+    while (abs(initx-x)>.075 || abs(inity-y)>.075 || initx == -1 || inity == -1){
         initx = Enes100.getX();
         inity = Enes100.getY();
         deltax = x - initx;
@@ -531,12 +543,12 @@ bool driveToPointObstructed(double x, double y, double theta){
             Serial.print("Stuck");
             stop();
         }
-        
-        if(unifiedUltrasonicClosest() < 4){
+        Enes100.println(unifiedUltrasonicClosest());
+        if(unifiedUltrasonicClosest() < 7){
             if(inity >= 1){
                 angleOffset = -(PI/32);
             }
-            while(unifiedUltrasonicClosest() < 6){
+            while(unifiedUltrasonicClosest() < 10){
                 turnToAngle(targetAngle + angleOffset);
                 if (angleOffset >= 0){
                     angleOffset += (PI/32);
@@ -558,7 +570,7 @@ bool driveToPointObstructed(double x, double y, double theta){
         }
         else if(obstacleFound){
             cyclesSinceObstacleFound++;
-            if (cyclesSinceObstacleFound > 10){
+            if (cyclesSinceObstacleFound > 20){
                 angleOffset = 0;
                 cyclesSinceObstacleFound = 0;
                 obstacleFound = false;
@@ -570,6 +582,7 @@ bool driveToPointObstructed(double x, double y, double theta){
         else{
             turnToAngle(targetAngle);
         }
+        Serial.println(unifiedUltrasonicClosest());
         Serial.print("Driving   deltax: ");
         Serial.print(abs(initx - x));
         Serial.print("deltay: ");
