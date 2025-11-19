@@ -27,7 +27,6 @@ NewPing ultrasonic1(TRIGGER_PIN1, ECHO_PIN1, MAX_DISTANCE);
 NewPing ultrasonic2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE);
 
 //Servo Configs
-Servo armServo;
 Servo clawServo;
 
 //Motor Configs
@@ -76,7 +75,7 @@ void initalizeProgram(bool connectToENES){
             Serial.println("WiFi Connected!");
         }
         else{
-            Serial.println("Wifi Failure!!!!!");
+            Serial.println("Wifi Failure!!");
         }
         Enes100.println("R6 Connected to Vision!");
     }
@@ -141,13 +140,6 @@ void pathfindToObjective(){
     return; 
 }
 
-void deployArm(){
-    armServo.write(56);
-    delay(500);
-    clawServo.write(0);
-    incrementState();
-}
-
 void deployPinion(){
 
 }
@@ -171,10 +163,19 @@ void retractPinion(){
 
 }
 
-void retractArm(){
-    armServo.write(90);
+void fullScore(){
+    clawServo.write(14);
+    pinionDrive(175);
+    delay(1500);
+    clawServo.write(10);
+    delay(1500);
+    pinionDrive(0);
+    clawServo.write(35);
+    detectBField();
     delay(500);
-    incrementState();
+    pinionDrive(-255);
+    delay(2500);
+    pinionDrive(0);
 }
 
 bool detectBField(){
@@ -184,11 +185,11 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) -100;
+    total = ((total / numReadings) / 2.0351) -83;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
-    if(total < -10 || total > 10){
+    if(total < -20 || total > 20){
         Enes100.mission(MAGNETISM, MAGNETIC);
         Serial.println("B-Field True");
         return true;
@@ -232,10 +233,9 @@ void portConfiguration(){
     pinMode(rightIN1, OUTPUT);
     pinMode(rightIN2, OUTPUT);
     pinMode(rightEN, OUTPUT);
-    armServo.attach(5);
     clawServo.attach(6);
-    armServo.write(25);
-    clawServo.write(90);
+    clawServo.write(9);
+
 }
 
 bool squareWaveRead() {
@@ -281,13 +281,24 @@ void serialCommunication(){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
         if(receivedMessage == "Claw"){
-            clawServo.write(60);
+            clawServo.write(20);
             delay(5000);
-            clawServo.write(90+50);
+            clawServo.write(9);
+        }
+
+        if(receivedMessage == "pinion"){
+            Serial.print("Pinion");
+            pinionDrive(-150);
+            delay(3000);
+            pinionDrive(0);
         }
 
         if(receivedMessage == "B-Field"){
            detectBField();
+        }
+
+        if(receivedMessage == "score"){
+            fullScore();
         }
 
         if(receivedMessage == "pid"){
@@ -359,8 +370,23 @@ void stop(){
     digitalWrite(rightIN2, LOW);
 }
 
+void pinionDrive(int pwm){
+    if(pwm<0){
+        pwm = abs(pwm);
+        digitalWrite(pinionIN1, HIGH);
+        digitalWrite(pinionIN2, LOW);
+        analogWrite(pinionEN, pwm);
+    }
+    else{
+        digitalWrite(pinionIN1, LOW);
+        digitalWrite(pinionIN2, HIGH);
+        analogWrite(pinionEN, pwm);
+    }
+}
+
 void tankDrive(int pwm){
     if(pwm<0){
+        pwm = abs(pwm);
         digitalWrite(leftIN1, HIGH);
         digitalWrite(leftIN2, LOW);
         digitalWrite(rightIN1, HIGH);
