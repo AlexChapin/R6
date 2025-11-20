@@ -13,6 +13,7 @@ void portConfiguration();
 void stop();
 void deployArm();
 void deployPinion();
+void fullScore();
 void deployClaw();
 void openClawWide();
 void pickUpPuck();
@@ -27,6 +28,7 @@ void pinionDrive(int pwm);
 void turnToAngle(float angle);
 bool driveToPoint(double x, double y, double theta);
 bool driveToPointObstructed(double x, double y, double theta);
+bool squareWaveRead();
 
 
 

@@ -164,18 +164,30 @@ void retractPinion(){
 }
 
 void fullScore(){
-    clawServo.write(14);
-    pinionDrive(175);
-    delay(1500);
-    clawServo.write(10);
-    delay(1500);
-    pinionDrive(0);
-    clawServo.write(35);
-    detectBField();
-    delay(500);
+    clawServo.write(15);
     pinionDrive(-255);
-    delay(2500);
+    delay(1750);
+    clawServo.write(0);
     pinionDrive(0);
+    squareWaveRead();
+    delay(3000);
+    clawServo.write(15);
+    // clawServo.write(5);
+    // pinionDrive(0);
+    // squareWaveRead();
+    // clawServo.write(10);
+    // delay(1000);
+    // clawServo.write(8);
+    // delay(500);
+    // pinionDrive(0);
+    // clawServo.write(35);
+    // detectBField();
+    // // delay(500);
+    pinionDrive(255);
+    delay(2500);
+    // delay(3000);
+    pinionDrive(0);
+    clawServo.write(15);
 }
 
 bool detectBField(){
@@ -185,11 +197,11 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) -83;
+    total = ((total / numReadings) / 2.0351) - 110;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
-    if(total < -20 || total > 20){
+    if(total < -30 || total > 30){
         Enes100.mission(MAGNETISM, MAGNETIC);
         Serial.println("B-Field True");
         return true;
@@ -217,15 +229,16 @@ void pathfindToLog(){
 void driveOverLog(){
     float y = Enes100.getY();
     int cyclesElapsed = 0;
-    while(y < 4.05){
+    //while(y < 4.05){
         y = Enes100.getY();
         tankDrive(255);
-        delay(100); 
-    }
+        delay(2000);
+        stop();
+    //}
 }
 
 void portConfiguration(){
-    pinMode(2, INPUT_PULLUP); 
+    pinMode(12, INPUT_PULLUP); 
     pinMode(A0, INPUT);
     pinMode(leftIN1, OUTPUT);
     pinMode(leftIN2, OUTPUT);
@@ -234,7 +247,7 @@ void portConfiguration(){
     pinMode(rightIN2, OUTPUT);
     pinMode(rightEN, OUTPUT);
     clawServo.attach(6);
-    clawServo.write(9);
+    clawServo.write(15);
 
 }
 
@@ -246,8 +259,10 @@ bool squareWaveRead() {
     unsigned long timeLow;
     float dutyCycle;
     for(int i = 0; i < numReadings; i++){
-        timeHigh = pulseIn(2, HIGH);
-        timeLow = pulseIn(2, LOW);
+        timeHigh = pulseIn(12, HIGH);
+        Serial.println(timeHigh);
+        Serial.println(timeLow);
+        timeLow = pulseIn(12, LOW);
         unsigned long totalPeriod = timeHigh + timeLow;
         if (totalPeriod > 0) {
             dutyCycle = ((float)timeHigh / totalPeriod) * 100.0;
