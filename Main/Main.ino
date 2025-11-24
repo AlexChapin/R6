@@ -3,13 +3,13 @@
 
 void setup() {
 bool runAuton = false;
-bool connecttoENES = true;
+bool connecttoENES = false;
 
 
 runProgram(runAuton);
 initalizeProgram(connecttoENES);
 portConfiguration();
-//fullScore();
+fullScore();
 }
 
 

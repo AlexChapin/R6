@@ -166,8 +166,8 @@ void retractPinion(){
 void fullScore(){
     clawServo.write(15);
     pinionDrive(-255);
-    delay(1750);
-    clawServo.write(0);
+    delay(2000);
+    clawServo.write(-20);
     pinionDrive(0);
     squareWaveRead();
     delay(3000);
