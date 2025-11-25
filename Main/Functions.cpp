@@ -128,12 +128,12 @@ void pathfindToObjective(){
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            driveToPoint(0.26, 0.52, -PI / 2);
+            driveToPoint(0.26, 0.72, -PI / 2);
             break;
     
         case false:
             turnToAngle(PI / 2);
-            driveToPoint(0.33, 1.55, PI / 2);
+            driveToPoint(0.33, 1.29, PI / 2);
             break;
     }
     incrementState();
@@ -164,30 +164,36 @@ void retractPinion(){
 }
 
 void fullScore(){
-    clawServo.write(15);
+    clawServo.write(24);
     pinionDrive(-255);
-    delay(2000);
+    delay(2100);
     clawServo.write(-20);
     pinionDrive(0);
-    squareWaveRead();
-    delay(3000);
-    clawServo.write(15);
-    // clawServo.write(5);
-    // pinionDrive(0);
-    // squareWaveRead();
-    // clawServo.write(10);
-    // delay(1000);
-    // clawServo.write(8);
-    // delay(500);
-    // pinionDrive(0);
-    // clawServo.write(35);
-    // detectBField();
-    // // delay(500);
-    pinionDrive(255);
-    delay(2500);
-    // delay(3000);
+    if(!squareWaveRead()){
+        clawServo.write(24);
+        pinionDrive(-255);
+        delay(100);
+        pinionDrive(0);
+        clawServo.write(-20);
+        squareWaveRead();
+        clawServo.write(15);
+    }
+    else{
+        clawServo.write(15);
+        pinionDrive(-255);
+        delay(100); 
+    }
+    clawServo.write(11);
+    pinionDrive(-255);
+    delay(800);
     pinionDrive(0);
-    clawServo.write(15);
+    clawServo.write(35);
+    detectBField();
+    delay(500);
+    pinionDrive(255);
+    delay(3700);
+    pinionDrive(0);
+    clawServo.write(24);
 }
 
 bool detectBField(){
@@ -213,28 +219,15 @@ bool detectBField(){
     }
 }
 
-void pathfindToLog(){
-    float targetX = .5;
-    float targetY = 3.7;
-    float targetTheta = 0;
-    if(!driveToPointObstructed(targetX, targetY, targetTheta)){
-        tankDrive(-25);
-        delay(250);
-        stop();
-        pathfindToLog();
-    }
-    incrementState();
-}
-
 void driveOverLog(){
     float y = Enes100.getY();
     int cyclesElapsed = 0;
-    //while(y < 4.05){
+    while(y < 4.05){
         y = Enes100.getY();
         tankDrive(255);
         delay(2000);
         stop();
-    //}
+    }
 }
 
 void portConfiguration(){
@@ -295,6 +288,12 @@ void serialCommunication(){
     if (Serial.available() > 0){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
+
+        if(receivedMessage == "Test"){
+            pathfindToObjective();
+            fullScore();
+        }
+
         if(receivedMessage == "Claw"){
             clawServo.write(20);
             delay(5000);
@@ -370,10 +369,6 @@ void serialCommunication(){
             Serial.print(Enes100.getY());
             Serial.print(", Theta = ");
             Serial.println(Enes100.getTheta());
-        }
-
-        if(receivedMessage == "Pathfind"){
-            pathfindToLog();
         }
     }
 }
@@ -548,86 +543,17 @@ bool driveToPoint(double x, double y, double theta){
     return true;
 }
 
-bool driveToPointObstructed(double x, double y, double theta){
-    while(Enes100.getX() == -1){
-        delay(5);
-    }
-    float initx = Enes100.getX();
-    float inity = Enes100.getY();
-    float inittheta = Enes100.getTheta();
-    float deltax = x - initx;
-    float deltay = y - inity;
-    float targetAngle = atan2(deltay, deltax);
-    turnToAngle(targetAngle);
-    angleController.SetTunings(15, 60, 60);
-    float angleOffset = 0;
-    bool obstacleFound = false;
-    int cyclesSinceObstacleFound;
-    while (abs(initx-x)>.075 || abs(inity-y)>.075 || initx == -1 || inity == -1){
-        initx = Enes100.getX();
-        inity = Enes100.getY();
-        deltax = x - initx;
-        deltay = y - inity;
-        targetAngle = atan2(deltay, deltax);
-        while(initx == -1 || inity == -1){
-            initx = Enes100.getX();
-            inity = Enes100.getY();
-            delay(10);
-            Serial.print("Stuck");
-            stop();
-        }
-        Enes100.println(unifiedUltrasonicClosest());
-        if(unifiedUltrasonicClosest() <= 7){
-            Serial.println("Obstacle FOUND!");
-            if(inity >= 1){
-                angleOffset = -(PI/16);
-            }
-            else{
-                angleOffset = (PI/16);
-            }
-            while(unifiedUltrasonicClosest() < 10){
-                turnToAngle(targetAngle + angleOffset);
-                if (angleOffset >= 0){
-                    angleOffset += (PI/16);
-                }
-                else{
-                    angleOffset -= (PI/16);
-                }
-                if (angleOffset > (PI/3)){
-                    angleOffset = -(PI/16);
-                }
-                else if (angleOffset < - (PI/3)){
-                    Serial.print("Passable Angle Finding FAILED");
-                    return false;
-                }
-            }
-            obstacleFound = true;
-            cyclesSinceObstacleFound = 0;
-            Serial.print("Obstacle Safe Path!!");
-        }
-        else if(obstacleFound){
-            cyclesSinceObstacleFound++;
-            if (cyclesSinceObstacleFound > 20){
-                angleOffset = 0;
-                cyclesSinceObstacleFound = 0;
-                obstacleFound = false;
-            }
-            else{
-                turnToAngle(targetAngle + angleOffset + ((angleOffset/angleOffset)*(PI/6)));
-            }
-        }
-        else{
-            turnToAngle(targetAngle);
-        }
-        Serial.println(unifiedUltrasonicClosest());
-        Serial.print("Driving   deltax: ");
-        Serial.print(abs(initx - x));
-        Serial.print("deltay: ");
-        Serial.println(abs(inity - y));
-        tankDrive(75);
-        delay(200);
-    }
-    angleController.SetTunings(Kp, Ki, Kd);
-    turnToAngle(theta);
-    return true;
-}
+// bool obstacleNavigate(double x, double y, double theta){
+//     float initx = Enes100.getX();
+//     float inity = Enes100.getY();
+//     float initTheta = Enes100.getTheta();
+//     while(initx == -1){
+//         initx = Enes100.getX();
+//         inity = Enes100.getY();
+//         initTheta = Enes100.getTheta();
+//     }
+//     float targetAngle = atan2((y - inity), (x - initx));
+//     turnToAngle(targetAngle);
+    
+//     while(unifiedUltrasonicCloseset() > )
+// }
