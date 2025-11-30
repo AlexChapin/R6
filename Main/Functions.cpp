@@ -134,6 +134,55 @@ void pathfindToObjective(){
     return; 
 }
 
+void newPathfindToObjective(){
+    bool adjusted = false;
+    double atan = 0;
+    Enes100.println("Path Finding To Objective");
+    float x = Enes100.getX();
+    float y = Enes100.getY();
+    bool top = y > 1;
+    switch (top) {
+        case true:
+            turnToAngle(-PI / 2);
+            while(y < .73){
+                float x = Enes100.getX();
+                float y = Enes100.getY();
+                tankDrive(150);
+                delay(50);
+                if(!adjusted && y < .93){
+                    stop();
+                    for(int i = 0; i < 10; i++){
+                        atan += atan2((0.26 - x),(0.72 - y));
+                        delay(10);
+                    }
+                    atan = atan / 10;
+                    turnToAngle(atan);
+                }
+            }
+            break;
+    
+        case false:
+            turnToAngle(PI / 2);
+            while(y > 1.28){
+                float x = Enes100.getX();
+                float y = Enes100.getY();
+                tankDrive(150);
+                delay(50);
+                if(!adjusted && y > 1.08){
+                    stop();
+                    for(int i = 0; i < 10; i++){
+                        atan += atan2((0.33 - x),(1.29 - y));
+                        delay(10);
+                    }
+                    atan = atan / 10;
+                    turnToAngle(atan);
+                }
+            }
+            break;
+    }
+
+}
+
 void deployPinion(){
 
 }

@@ -13,6 +13,7 @@ void portConfiguration();
 void stop();
 void deployArm();
 void deployPinion();
+void newPathfindToObjective();
 void fullScore();
 void deployClaw();
 void openClawWide();
