@@ -117,12 +117,6 @@ void pathfindToObjective(){
     float y = Enes100.getY();
     Serial.print(x);
     Serial.println(y);
-    // if(x < .2 || x > 1.2|| y < 0.15 || y > 2){
-    //     Enes100.println("FAILED to Find Valid Field Location, Ensure Wifi is Connected and Robot is on the Field!");
-    //     stop();
-    //     delay(1000);
-    //     return;
-    // }
     bool top = y > 1;
 
     switch (top) {
