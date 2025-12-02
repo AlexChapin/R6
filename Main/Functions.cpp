@@ -122,15 +122,42 @@ void pathfindToObjective(){
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            driveToPoint(0.26, 0.72, -PI / 2);
+            driveToPoint(0.26, 0.82, -PI / 2);
+            delay(100);
+            turnToAngle(-PI / 2);
+            delay(100);
+            turnToAngle(-PI / 2);
+            while(y > .75){
+                y = Enes100.getY();
+                tankDrive(80);
+                delay(10);
+            }
+            if(unifiedUltrasonicClosest() > 2){
+                tankDrive(-170);
+                delay(1500);
+                pathfindToObjective();
+            }
             break;
     
         case false:
             turnToAngle(PI / 2);
-            driveToPoint(0.33, 1.29, PI / 2);
+            driveToPoint(0.33, 1.19, PI / 2);
+            delay(100);
+            turnToAngle(PI / 2);
+            delay(100);
+            turnToAngle(PI / 2);
+            while(y < 1.28){
+                y = Enes100.getY();
+                tankDrive(80);
+                delay(10);
+            }
+            if(unifiedUltrasonicClosest() > 2){
+                tankDrive(-170);
+                delay(1500);
+                pathfindToObjective();
+            }
             break;
     }
-    incrementState();
     return; 
 }
 
@@ -144,38 +171,50 @@ void newPathfindToObjective(){
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            while(y < .73){
+            while(y > .73){
                 float x = Enes100.getX();
                 float y = Enes100.getY();
-                tankDrive(150);
+                tankDrive(80);
                 delay(50);
-                if(!adjusted && y < .93){
+                if(!adjusted && y < 1){
+                    Serial.print("Adjusting");
                     stop();
                     for(int i = 0; i < 10; i++){
-                        atan += atan2((0.26 - x),(0.72 - y));
+                        float x = Enes100.getX();
+                        float y = Enes100.getY();
+                        if(x != -1){
+                            atan += atan2((0.72 - y), (0.26 - x));
+                        }
                         delay(10);
                     }
                     atan = atan / 10;
                     turnToAngle(atan);
+                    adjusted = true;
                 }
             }
             break;
     
         case false:
             turnToAngle(PI / 2);
-            while(y > 1.28){
+            while(y < 1.28){
                 float x = Enes100.getX();
                 float y = Enes100.getY();
-                tankDrive(150);
+                tankDrive(80);
                 delay(50);
-                if(!adjusted && y > 1.08){
+                if(!adjusted && y > .8){
                     stop();
-                    for(int i = 0; i < 10; i++){
-                        atan += atan2((0.33 - x),(1.29 - y));
+                    for(int i = 0; i < 10;){
+                        float x = Enes100.getX();
+                        float y = Enes100.getY();
+                        if(x != -1){
+                            atan += atan2((1.29 - y), (0.33 - x));
+                        }
                         delay(10);
+                        i++;
                     }
                     atan = atan / 10;
                     turnToAngle(atan);
+                    adjusted = true;
                 }
             }
             break;
@@ -332,8 +371,13 @@ void serialCommunication(){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
 
+        if(receivedMessage == "NewPathfind"){
+            newPathfindToObjective();
+        }
+
         if(receivedMessage == "Test"){
             pathfindToObjective();
+            stop();
             fullScore();
         }
 
@@ -586,17 +630,17 @@ bool driveToPoint(double x, double y, double theta){
     return true;
 }
 
-// bool obstacleNavigate(double x, double y, double theta){
-//     float initx = Enes100.getX();
-//     float inity = Enes100.getY();
-//     float initTheta = Enes100.getTheta();
-//     while(initx == -1){
-//         initx = Enes100.getX();
-//         inity = Enes100.getY();
-//         initTheta = Enes100.getTheta();
-//     }
-//     float targetAngle = atan2((y - inity), (x - initx));
-//     turnToAngle(targetAngle);
+bool obstacleNavigate(){
+    float initx = Enes100.getX();
+    float inity = Enes100.getY();
+    float initTheta = Enes100.getTheta();
+    while(initx == -1){
+        initx = Enes100.getX();
+        inity = Enes100.getY();
+        initTheta = Enes100.getTheta();
+    }
+    float targetAngle = atan2((y - inity), (x - initx));
+    turnToAngle(targetAngle);
     
-//     while(unifiedUltrasonicCloseset() > )
-// }
+    while(unifiedUltrasonicCloseset() > )
+}
