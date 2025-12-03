@@ -222,29 +222,6 @@ void newPathfindToObjective(){
 
 }
 
-void deployPinion(){
-
-}
-
-void deployClaw(){
-    clawServo.write(100);
-    incrementState();
-}
-
-void openClawWide(){
-    clawServo.write(100);
-    incrementState();
-}
-
-void pickUpPuck(){
-    clawServo.write(100);
-    incrementState();
-}
-
-void retractPinion(){
-
-}
-
 void fullScore(){
     clawServo.write(24);
     pinionDrive(-255);
@@ -257,8 +234,20 @@ void fullScore(){
         delay(100);
         pinionDrive(0);
         clawServo.write(-20);
-        squareWaveRead();
+        if(!squareWaveRead()){
+            clawServo.write(24);
+            pinionDrive(-255);
+            delay(100);
+            pinionDrive(0);
+            clawServo.write(-20);
+            squareWaveRead();
+            clawServo.write(15);
+        }
+        else{
         clawServo.write(15);
+        pinionDrive(-255);
+        delay(100); 
+        }
     }
     else{
         clawServo.write(15);
@@ -481,6 +470,17 @@ void pinionDrive(int pwm){
     }
 }
 
+void tankDriveWallRun(int pwm){
+    if(pwm>0){
+        digitalWrite(leftIN1, LOW);
+        digitalWrite(leftIN2, HIGH);
+        digitalWrite(rightIN1, LOW);
+        digitalWrite(rightIN2, HIGH);
+        analogWrite(leftEN, pwm * .8);
+        analogWrite(rightEN, pwm);
+    }
+}
+
 void tankDrive(int pwm){
     if(pwm<0){
         pwm = abs(pwm);
@@ -631,16 +631,26 @@ bool driveToPoint(double x, double y, double theta){
 }
 
 bool obstacleNavigate(){
-    float initx = Enes100.getX();
-    float inity = Enes100.getY();
-    float initTheta = Enes100.getTheta();
-    while(initx == -1){
-        initx = Enes100.getX();
-        inity = Enes100.getY();
-        initTheta = Enes100.getTheta();
+    float x = Enes100.getX();
+    float y = Enes100.getY();
+    float theta = Enes100.getTheta();
+    while(x == -1){
+        x = Enes100.getX();
+        y = Enes100.getY();
+        theta = Enes100.getTheta();
     }
-    float targetAngle = atan2((y - inity), (x - initx));
-    turnToAngle(targetAngle);
-    
-    while(unifiedUltrasonicCloseset() > )
+    tankDrive(-150);
+    delay(750);
+    turnToAngle(-.9);
+    delay(100);
+    turnToAngle(-.9);
+    while(unifiedUltrasonicClosest() > 3){
+        tankDrive(90);
+    }
+    turnToAngle(0);
+    while(x < 2.75){
+        tankDriveWallRun(100);
+    }
+    stop();
+    driveToPoint(3.1, 0.45, 0);
 }

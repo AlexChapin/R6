@@ -9,7 +9,6 @@ bool connecttoENES = true;
 runProgram(runAuton);
 initalizeProgram(connecttoENES);
 portConfiguration();
-//fullScore();
 }
 
 
@@ -20,10 +19,11 @@ void loop() {
   if(getState() > 0){
     switch(getState()){
       case 1:
+        pathfindToObjective();
         incrementState();
         break;
-        pathfindToObjective();
       case 2:
+        fullScore();
         incrementState();
         break;
       case 3:
