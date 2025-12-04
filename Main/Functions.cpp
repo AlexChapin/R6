@@ -225,9 +225,10 @@ void newPathfindToObjective(){
 void fullScore(){
     clawServo.write(24);
     pinionDrive(-255);
-    delay(2100);
+    delay(2500);
     clawServo.write(-20);
     pinionDrive(0);
+    squareWaveRead();
     if(!squareWaveRead()){
         clawServo.write(24);
         pinionDrive(-255);
@@ -254,7 +255,7 @@ void fullScore(){
         pinionDrive(-255);
         delay(100); 
     }
-    clawServo.write(11);
+    clawServo.write(4);
     pinionDrive(-255);
     delay(800);
     pinionDrive(0);
@@ -262,7 +263,7 @@ void fullScore(){
     detectBField();
     delay(500);
     pinionDrive(255);
-    delay(3700);
+    delay(4300);
     pinionDrive(0);
     clawServo.write(24);
 }
@@ -362,6 +363,10 @@ void serialCommunication(){
 
         if(receivedMessage == "NewPathfind"){
             newPathfindToObjective();
+        }
+
+        if(receivedMessage == "ObstacleNav"){
+            obstacleNavigate();
         }
 
         if(receivedMessage == "Test"){
@@ -476,8 +481,8 @@ void tankDriveWallRun(int pwm){
         digitalWrite(leftIN2, HIGH);
         digitalWrite(rightIN1, LOW);
         digitalWrite(rightIN2, HIGH);
-        analogWrite(leftEN, pwm * .8);
-        analogWrite(rightEN, pwm);
+        analogWrite(leftEN, pwm);
+        analogWrite(rightEN, pwm * 0.5);
     }
 }
 
@@ -639,18 +644,34 @@ bool obstacleNavigate(){
         y = Enes100.getY();
         theta = Enes100.getTheta();
     }
+    bool top = y > 1;
     tankDrive(-150);
-    delay(750);
-    turnToAngle(-.9);
-    delay(100);
-    turnToAngle(-.9);
-    while(unifiedUltrasonicClosest() > 3){
-        tankDrive(90);
+    delay(250);
+    if(top){
+        delay(200);
     }
     turnToAngle(0);
-    while(x < 2.75){
-        tankDriveWallRun(100);
+    delay(100);
+    turnToAngle(0);
+    tankDrive(175);
+    delay(100);
+    stop();
+    turnToAngle(-PI/2);
+    delay(100);
+    turnToAngle(-PI/2);
+    while(y > .1 || y == -1){
+        y = Enes100.getY();
+        tankDrive(90);
+    }
+    turnToAngle(-0.3);
+    delay(100);
+    turnToAngle(-0.3);
+    delay(100);
+    turnToAngle(-0.3);
+    while(x < 2.55){
+        x = Enes100.getX();
+        tankDriveWallRun(175);
     }
     stop();
-    driveToPoint(3.1, 0.45, 0);
+    driveOverLog();
 }

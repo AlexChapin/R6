@@ -16,6 +16,7 @@ void deployPinion();
 void newPathfindToObjective();
 void tankDriveWallRun(int pwm);
 void fullScore();
+bool obstacleNavigate();
 bool detectBField();
 void pathfindToLog();
 void driveOverLog();

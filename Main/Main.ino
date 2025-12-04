@@ -27,6 +27,7 @@ void loop() {
         incrementState();
         break;
       case 3:
+        obstacleNavigate();
         incrementState();
         break;
       case 4:
