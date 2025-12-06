@@ -60,6 +60,14 @@ int getState(){
     return state;
 }
 
+void connectCheck(){
+    if(Enes100.state() != 0x01){
+        Serial.print("Attempting To Reconnect!");
+        stop();
+        Enes100.begin("R6", DATA, 200, 1116, 53, 51);
+    }
+}
+
 void initalizeProgram(bool connectToENES){ 
     Serial.begin(9600);
     Serial.println("");
@@ -159,67 +167,6 @@ void pathfindToObjective(){
             break;
     }
     return; 
-}
-
-void newPathfindToObjective(){
-    bool adjusted = false;
-    double atan = 0;
-    Enes100.println("Path Finding To Objective");
-    float x = Enes100.getX();
-    float y = Enes100.getY();
-    bool top = y > 1;
-    switch (top) {
-        case true:
-            turnToAngle(-PI / 2);
-            while(y > .73){
-                float x = Enes100.getX();
-                float y = Enes100.getY();
-                tankDrive(80);
-                delay(50);
-                if(!adjusted && y < 1){
-                    Serial.print("Adjusting");
-                    stop();
-                    for(int i = 0; i < 10; i++){
-                        float x = Enes100.getX();
-                        float y = Enes100.getY();
-                        if(x != -1){
-                            atan += atan2((0.72 - y), (0.26 - x));
-                        }
-                        delay(10);
-                    }
-                    atan = atan / 10;
-                    turnToAngle(atan);
-                    adjusted = true;
-                }
-            }
-            break;
-    
-        case false:
-            turnToAngle(PI / 2);
-            while(y < 1.28){
-                float x = Enes100.getX();
-                float y = Enes100.getY();
-                tankDrive(80);
-                delay(50);
-                if(!adjusted && y > .8){
-                    stop();
-                    for(int i = 0; i < 10;){
-                        float x = Enes100.getX();
-                        float y = Enes100.getY();
-                        if(x != -1){
-                            atan += atan2((1.29 - y), (0.33 - x));
-                        }
-                        delay(10);
-                        i++;
-                    }
-                    atan = atan / 10;
-                    turnToAngle(atan);
-                    adjusted = true;
-                }
-            }
-            break;
-    }
-
 }
 
 void fullScore(){
@@ -361,8 +308,8 @@ void serialCommunication(){
         String receivedMessage = Serial.readStringUntil('\n');
         receivedMessage.trim();
 
-        if(receivedMessage == "NewPathfind"){
-            newPathfindToObjective();
+        if(receivedMessage == "init"){
+            state = 1;
         }
 
         if(receivedMessage == "ObstacleNav"){
@@ -539,6 +486,7 @@ void turnToAngle(float angle){//-PI -> PI
     angleController.SetOutputLimits(-255, 255);
     angleController.SetMode(AUTOMATIC);
     while(abs(theta-angle)>(.1)){
+        connectCheck();
         prevX = Enes100.getX();
         prevY = Enes100.getY();
         theta = Enes100.getTheta();

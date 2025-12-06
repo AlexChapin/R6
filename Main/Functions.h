@@ -2,6 +2,7 @@
 #define Functions_h
 
 int getState();
+void connectCheck();
 void incrementState();
 void pathfindToObjective();
 void runProgram(bool value);
@@ -13,7 +14,6 @@ void portConfiguration();
 void stop();
 void deployArm();
 void deployPinion();
-void newPathfindToObjective();
 void tankDriveWallRun(int pwm);
 void fullScore();
 bool obstacleNavigate();

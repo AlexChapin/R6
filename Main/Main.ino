@@ -51,8 +51,8 @@ void loop() {
       case 10:
         incrementState();
         break;
+      }
     }
-  }
 }
 
 
