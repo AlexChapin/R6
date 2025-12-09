@@ -130,18 +130,18 @@ void pathfindToObjective(){
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            driveToPoint(0.26, 0.82, -PI / 2);
+            driveToPoint(0.26, 0.84, -PI / 2);
             delay(100);
             turnToAngle(-PI / 2);
             delay(100);
             turnToAngle(-PI / 2);
-            while(y > .75){
+            while(y > .72){
                 y = Enes100.getY();
                 tankDrive(80);
                 delay(10);
             }
             if(unifiedUltrasonicClosest() > 2){
-                tankDrive(-170);
+                tankDrive(-90);
                 delay(1500);
                 pathfindToObjective();
             }
@@ -160,7 +160,7 @@ void pathfindToObjective(){
                 delay(10);
             }
             if(unifiedUltrasonicClosest() > 2){
-                tankDrive(-170);
+                tankDrive(-90);
                 delay(1500);
                 pathfindToObjective();
             }
@@ -182,20 +182,7 @@ void fullScore(){
         delay(100);
         pinionDrive(0);
         clawServo.write(-20);
-        if(!squareWaveRead()){
-            clawServo.write(24);
-            pinionDrive(-255);
-            delay(100);
-            pinionDrive(0);
-            clawServo.write(-20);
-            squareWaveRead();
-            clawServo.write(15);
-        }
-        else{
-        clawServo.write(15);
-        pinionDrive(-255);
-        delay(100); 
-        }
+        squareWaveRead();
     }
     else{
         clawServo.write(15);
@@ -204,13 +191,13 @@ void fullScore(){
     }
     clawServo.write(4);
     pinionDrive(-255);
-    delay(800);
+    delay(1000);
     pinionDrive(0);
     clawServo.write(35);
     detectBField();
     delay(500);
     pinionDrive(255);
-    delay(4300);
+    delay(4500);
     pinionDrive(0);
     clawServo.write(24);
 }
@@ -222,7 +209,7 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) - 110;
+    total = ((total / numReadings) / 2.0351) - 154;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
@@ -486,7 +473,7 @@ void turnToAngle(float angle){//-PI -> PI
     angleController.SetOutputLimits(-255, 255);
     angleController.SetMode(AUTOMATIC);
     while(abs(theta-angle)>(.1)){
-        connectCheck();
+        // connectCheck();
         prevX = Enes100.getX();
         prevY = Enes100.getY();
         theta = Enes100.getTheta();
@@ -578,7 +565,6 @@ bool driveToPoint(double x, double y, double theta){
         prevY = inity;
         timeStuck = 0;
     }
-    //angleController.SetTunings(Kp, Ki, Kd);
     turnToAngle(theta);
     return true;
 }
