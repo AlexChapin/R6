@@ -236,7 +236,7 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) - 135.2;
+    total = ((total / numReadings) / 2.0351) - 101.2;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
