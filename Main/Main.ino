@@ -31,26 +31,7 @@ void loop() {
         incrementState();
         break;
       case 4:
-        incrementState();
-        break;
-      case 5:
-        incrementState();
-        break;
-      case 6:
-        incrementState();
-        break;
-      case 7:
-        incrementState();
-        break;
-      case 8:
-        incrementState();
-        break;
-      case 9:
-        incrementState();
-        break;
-      case 10:
-        incrementState();
-        break;
+        
       }
     }
 }

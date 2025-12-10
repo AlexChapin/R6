@@ -253,14 +253,14 @@ bool detectBField(){
 }
 
 void driveOverLog(){
-    float y = Enes100.getY();
+    float x = Enes100.getX();
     int cyclesElapsed = 0;
-    while(y < 4.05){
-        y = Enes100.getY();
+    while(x < 3.55){
+        x = Enes100.getX();
         tankDrive(255);
-        delay(2000);
-        stop();
+        delay(200);
     }
+    stop();
 }
 
 void portConfiguration(){
@@ -640,4 +640,14 @@ bool obstacleNavigate(){
     }
     stop();
     driveOverLog();
+}
+
+void victory(){
+    for(int i = 0; i < 100; i++){
+        Enes100.println("TEAM R6 HAS SUCESSFULLY NAVIGATED TO THE END!!!");
+        clawServo.write(15);
+        delay(500);
+        clawServo.write(0);
+        delay(500);
+    }
 }
