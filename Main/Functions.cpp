@@ -124,8 +124,16 @@ void pathfindToObjective(){
     float x = Enes100.getX();
     float y = Enes100.getY();
     float theta = Enes100.getTheta();
-    Serial.print(x);
-    Serial.println(y);
+    while(x == -1){
+        delay(10);
+        x = Enes100.getX();
+    }
+    Enes100.print("Started at X: ");
+    Enes100.print(x);
+    Enes100.print("   Y: ");
+    Enes100.println(y);
+    Enes100.println("");
+
     bool top = y > 1;
 
     switch (top) {
@@ -197,6 +205,12 @@ void pathfindToObjective(){
 }
 
 void fullScore(){
+    Enes100.println("Beginning Mission Objectives")
+    Enes100.print("Started at X: ");
+    Enes100.print(x);
+    Enes100.print("   Y: ");
+    Enes100.println(y);
+    Enes100.println("");
     clawServo.write(24);
     pinionDrive(-255);
     delay(2500);
