@@ -135,11 +135,14 @@ void pathfindToObjective(){
             turnToAngle(-PI / 2);
             delay(100);
             turnToAngle(-PI / 2);
-            while(y > .72){
+            delay(100);
+            turnToAngle(-PI / 2);
+            while(y > .73){
                 y = Enes100.getY();
                 tankDrive(80);
                 delay(10);
             }
+            delay(500);
             if(unifiedUltrasonicClosest() > 2){
                 tankDrive(-90);
                 delay(1500);
@@ -154,11 +157,14 @@ void pathfindToObjective(){
             turnToAngle(PI / 2);
             delay(100);
             turnToAngle(PI / 2);
+            delay(100);
+            turnToAngle(PI / 2);
             while(y < 1.28){
                 y = Enes100.getY();
                 tankDrive(80);
                 delay(10);
             }
+            delay(500);
             if(unifiedUltrasonicClosest() > 2){
                 tankDrive(-90);
                 delay(1500);
@@ -209,7 +215,7 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) - 154;
+    total = ((total / numReadings) / 2.0351) - 107.2;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
@@ -593,9 +599,12 @@ bool obstacleNavigate(){
     turnToAngle(-PI/2);
     delay(100);
     turnToAngle(-PI/2);
+    delay(100);
+    turnToAngle(-PI/2);
     while(y > .1 || y == -1){
         y = Enes100.getY();
         tankDrive(90);
+        delay(5);
     }
     turnToAngle(-0.3);
     delay(100);
