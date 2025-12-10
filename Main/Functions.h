@@ -14,6 +14,7 @@ void portConfiguration();
 void stop();
 void deployArm();
 void deployPinion();
+void victory();
 void tankDriveWallRun(int pwm);
 void fullScore();
 bool obstacleNavigate();

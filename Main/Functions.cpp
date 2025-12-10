@@ -643,8 +643,8 @@ bool obstacleNavigate(){
 }
 
 void victory(){
+    Enes100.println("TEAM R6 HAS SUCESSFULLY NAVIGATED TO THE END!!!");
     for(int i = 0; i < 100; i++){
-        Enes100.println("TEAM R6 HAS SUCESSFULLY NAVIGATED TO THE END!!!");
         clawServo.write(15);
         delay(500);
         clawServo.write(0);

@@ -31,7 +31,8 @@ void loop() {
         incrementState();
         break;
       case 4:
-        
+        victory();
+        incrementState();
       }
     }
 }
