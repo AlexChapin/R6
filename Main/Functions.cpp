@@ -123,6 +123,7 @@ void pathfindToObjective(){
     Enes100.println("Path Finding To Objective");
     float x = Enes100.getX();
     float y = Enes100.getY();
+    float theta = Enes100.getTheta();
     Serial.print(x);
     Serial.println(y);
     bool top = y > 1;
@@ -141,6 +142,16 @@ void pathfindToObjective(){
                 y = Enes100.getY();
                 tankDrive(80);
                 delay(10);
+                if( y > .74){
+                    theta = Enes100.getTheta();
+                    if(abs(theta + PI/2) > PI/16){
+                        y = Enes100.getY();
+                        tankTurn(90 * (theta + PI/2) / (theta + PI/2));
+                        delay(25);
+                        tankDrive(80);
+                        delay(10);
+                    }
+                }
             }
             delay(500);
             if(unifiedUltrasonicClosest() > 2){
@@ -164,6 +175,16 @@ void pathfindToObjective(){
                 tankDrive(80);
                 delay(10);
             }
+            if( y < 1.27){
+                    theta = Enes100.getTheta();
+                    if(abs(theta - PI/2) > PI/16){
+                        y = Enes100.getY();
+                        tankTurn(90 * (theta - PI/2) / (theta - PI/2));
+                        delay(25);
+                        tankDrive(80);
+                        delay(10);
+                    }
+                }
             delay(500);
             if(unifiedUltrasonicClosest() > 2){
                 tankDrive(-90);
@@ -215,7 +236,7 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) - 107.2;
+    total = ((total / numReadings) / 2.0351) - 135.2;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
@@ -604,7 +625,9 @@ bool obstacleNavigate(){
     while(y > .1 || y == -1){
         y = Enes100.getY();
         tankDrive(90);
-        delay(5);
+        delay(50);
+        y = Enes100.getY();
+        turnToAngle(-PI/2);
     }
     turnToAngle(-0.3);
     delay(100);
