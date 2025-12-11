@@ -2,8 +2,8 @@
 
 
 void setup() {
-bool runAuton = false;
-bool connecttoENES = false;
+bool runAuton = true;
+bool connecttoENES = true;
 
 
 runProgram(runAuton);
@@ -36,8 +36,3 @@ void loop() {
       }
     }
 }
-
-
-
-
-

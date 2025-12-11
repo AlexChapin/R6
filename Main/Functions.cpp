@@ -139,7 +139,7 @@ void pathfindToObjective(){
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            driveToPoint(0.26, 0.84, -PI / 2);
+            driveToPoint(0.26, 0.85, -PI / 2);
             delay(100);
             turnToAngle(-PI / 2);
             delay(100);
@@ -150,7 +150,8 @@ void pathfindToObjective(){
                 y = Enes100.getY();
                 tankDrive(80);
                 delay(10);
-                if( y > .74){
+                // 
+                if(y > .74){
                     theta = Enes100.getTheta();
                     if(abs(theta + PI/2) > PI/16){
                         y = Enes100.getY();
@@ -160,6 +161,7 @@ void pathfindToObjective(){
                         delay(10);
                     }
                 }
+                // 
             }
             delay(500);
             if(unifiedUltrasonicClosest() > 2){
@@ -182,8 +184,8 @@ void pathfindToObjective(){
                 y = Enes100.getY();
                 tankDrive(80);
                 delay(10);
-            }
-            if( y < 1.27){
+                // 
+                if( y < 1.27){
                     theta = Enes100.getTheta();
                     if(abs(theta - PI/2) > PI/16){
                         y = Enes100.getY();
@@ -193,6 +195,8 @@ void pathfindToObjective(){
                         delay(10);
                     }
                 }
+                // 
+            }
             delay(500);
             if(unifiedUltrasonicClosest() > 2){
                 tankDrive(-90);
@@ -205,12 +209,6 @@ void pathfindToObjective(){
 }
 
 void fullScore(){
-    Enes100.println("Beginning Mission Objectives")
-    Enes100.print("Started at X: ");
-    Enes100.print(x);
-    Enes100.print("   Y: ");
-    Enes100.println(y);
-    Enes100.println("");
     clawServo.write(24);
     pinionDrive(-255);
     delay(2500);
@@ -250,7 +248,7 @@ bool detectBField(){
         total += analogRead(A0);
         delay(2);
     }
-    total = ((total / numReadings) / 2.0351) - 101.2;
+    total = ((total / numReadings) / 2.0351) - 125.2;
     Serial.print("Measured B-Field: ");
     Serial.print(total);
     Serial.println("%");
@@ -269,7 +267,7 @@ bool detectBField(){
 void driveOverLog(){
     float x = Enes100.getX();
     int cyclesElapsed = 0;
-    while(x < 3.55){
+    while(x < 3.70){
         x = Enes100.getX();
         tankDrive(255);
         delay(200);
@@ -514,7 +512,6 @@ void turnToAngle(float angle){//-PI -> PI
     angleController.SetOutputLimits(-255, 255);
     angleController.SetMode(AUTOMATIC);
     while(abs(theta-angle)>(.1)){
-        // connectCheck();
         prevX = Enes100.getX();
         prevY = Enes100.getY();
         theta = Enes100.getTheta();
@@ -640,8 +637,10 @@ bool obstacleNavigate(){
         y = Enes100.getY();
         tankDrive(90);
         delay(50);
+        // 
         y = Enes100.getY();
         turnToAngle(-PI/2);
+        // 
     }
     turnToAngle(-0.3);
     delay(100);
@@ -653,6 +652,11 @@ bool obstacleNavigate(){
         tankDriveWallRun(175);
     }
     stop();
+    turnToAngle(.1);
+    delay(100);
+    turnToAngle(.1);
+    delay(100);
+    turnToAngle(.1);
     driveOverLog();
 }
 
