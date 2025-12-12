@@ -1,34 +1,33 @@
 #ifndef Functions_h
 #define Functions_h
 
-int getState();
-void connectCheck();
-void incrementState();
-void pathfindToObjective();
-void runProgram(bool value);
-float ultrasonicDistance1();
-float ultrasonicDistance2();
-void initalizeProgram(bool connecttoENES);
-void serialCommunication();
-void portConfiguration();
-void stop();
-void deployArm();
-void deployPinion();
-void victory();
-void tankDriveWallRun(int pwm);
-void fullScore();
-bool obstacleNavigate();
 bool detectBField();
-void pathfindToLog();
-void driveOverLog();
-void tankDrive(int pwm);
-void tankTurn(int pwm);
-void pinionDrive(int pwm);
-void turnToAngle(float angle);
 bool driveToPoint(double x, double y, double theta);
-bool driveToPointObstructed(double x, double y, double theta);
 bool squareWaveRead();
 
+float ultrasonicDistance1();
+float ultrasonicDistance2();
+float unifiedUltrasonicClosest();
+
+int getState();
+
+void connectCheck();
+void driveOverLog();
+void fullScore();
+void initalizeProgram(bool connectToENES);
+void incrementState();
+void obstacleNavigate();
+void pathfindToObjective();
+void pinionDrive(int pwm);
+void portConfiguration();
+void runProgram(bool value);
+void serialCommunication();
+void stop();
+void tankDrive(int pwm);
+void tankDriveWallRun(int pwm);
+void tankTurn(int pwm);
+void turnToAngle(float angle);
+void victory();
 
 
 #endif

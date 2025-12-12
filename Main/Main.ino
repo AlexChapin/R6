@@ -3,11 +3,11 @@
 
 void setup() {
 bool runAuton = false;
-bool connecttoENES = false;
+bool connectToENES = false;
 
 
 runProgram(runAuton);
-initalizeProgram(connecttoENES);
+initalizeProgram(connectToENES);
 portConfiguration();
 }
 

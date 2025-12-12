@@ -338,17 +338,17 @@ void serialCommunication(){
             state = 1;
         }
 
-        if(receivedMessage == "ObstacleNav"){
+        if(receivedMessage == "obstaclenav"){
             obstacleNavigate();
         }
 
-        if(receivedMessage == "Test"){
+        if(receivedMessage == "test"){
             pathfindToObjective();
             stop();
             fullScore();
         }
 
-        if(receivedMessage == "Claw"){
+        if(receivedMessage == "claw"){
             clawServo.write(20);
             delay(5000);
             clawServo.write(9);
@@ -361,7 +361,7 @@ void serialCommunication(){
             pinionDrive(0);
         }
 
-        if(receivedMessage == "B-Field"){
+        if(receivedMessage == "b-field"){
            detectBField();
         }
 
@@ -377,7 +377,7 @@ void serialCommunication(){
             driveOverLog();
         }
 
-        if(receivedMessage == "Motor Test"){
+        if(receivedMessage == "motor test"){
             tankDrive(100 * percentToPWM);
             Serial.println("Forward at 25%");
             delay(5000);
@@ -405,17 +405,17 @@ void serialCommunication(){
             stop();
         }
 
-        if(receivedMessage == "Sensor Test"){
+        if(receivedMessage == "sensor test"){
             Serial.println("Sensor Testing!");
             Serial.println(ultrasonicDistance1());
             Serial.println(ultrasonicDistance2());
             Serial.println(unifiedUltrasonicClosest());
         }
 
-        if(receivedMessage == "Square Wave"){
+        if(receivedMessage == "square wave"){
             squareWaveRead();
         }
-        if(receivedMessage == "Wifi Data"){
+        if(receivedMessage == "wifi data"){
             Serial.println("Fetching Data from ENES Service...");
             Serial.print("x = ");
             Serial.print(Enes100.getX());
@@ -607,7 +607,7 @@ bool driveToPoint(double x, double y, double theta){
     return true;
 }
 
-bool obstacleNavigate(){
+void obstacleNavigate(){
     float x = Enes100.getX();
     float y = Enes100.getY();
     float theta = Enes100.getTheta();

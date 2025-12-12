@@ -2,37 +2,47 @@
 Code for ENES 100 Section 1101 Team 2
 
 ## Notes on Code Organization
-1. All functions should be called from the Main.ino file
-2. Declare new functions by name in Functions.h
-3. Create the function in Functions.cpp
+1. All executive level functions should be called from the Main.ino file
+2. All functions are declared by name in Functions.h
+3. The actual code for the functions exist in Functions.cpp
 
-## Public Functions
-1. runProgram(bool value);  Configures state machine based on input, if bool is false the state machine will not be configured.
-1. getState();  Returns the current state number from 0-??.
-1. initalizeProgram(bool connecttoENES);    Connects to the ENES100 system if True otherwise configures Serial Monitor.
-1. portConfiguration();  Configures ports as defined in the pinmap. 
-1. serialCommunication();  Checks the Serial Monitor Queue and executes functions based on user input.
-    1. Motor Test -> Tests motor functionality.
-    1. Sensor Test -> Tests sensor functionality and prints values to Serial Monitor.
-    1. Square Wave -> Reads current squarewave from PIN 2.
-    1. Wifi Data -> Reads ENES100 data and prints values to Serial Monitor.
-1. pathfindToObjective();   Moves robot from the respective starting areas to the mission area.
-1. deployArm(); Prototype(Unimplemented) 
-1. deployPinion();  Prototype(Unimplemented)
-1. deployClaw();    Prototype(Unimplemented)
-1. openClawWide();  Prototype(Unimplemented)
-1. pickUpPuck();    Prototype(Unimplemented)
-1. retractPinion(); Prototype(Unimplemented)
-1. retractArm();    Prototype(Unimplemented)
-1. detectBField();  Prototype(Unimplemented)
+## Functionality
+1. boolean detectBField() -> Reads the magnetic field from the B-Field Sensor and reports it to the ENES 100 system. 
+1. boolean driveToPoint(double x, double y, double theta) -> Drives the robot to the given coordinates using the turnToAngle() function.
+1. boolean squareWaveRead() -> Reads the squarewave off of the contact pads on the outside of the claw and reports it to the ENES 100 system if it is a valid reading. Returns true if reading and reporting was sucessful, returns false if the reading failed. 
 
-## Private Functions
-1. stop();  Stops robot movement.
-1. incrementState();    Move to next state in the state machine.
-1. tankDrive(int percent, bool directioninv);  Drives the robot forward, provide percentage and a boolean, the boolean inverts the direction of movement.
-1. tankTurn(int percent, bool directioninv);  Turns the robot, provide percentage and a boolean, true=Right false=Left.
-1. squareWaveRead();    Reads squarewave read across pin 2 and ground, returns a true if the function was sucessful and false if it failed for any reason.
-1. validateXYTheta(float x, float y, float theta); Returns true if the values are close to the last values and false if the values should be discarded. 
-1. validateTheta(float theta);  Returns true if the values are close to the last value and false if the values should be discarded.
-1. ALPHA    turnToAngle(float angle);  Turns the robot to a given angle, -Pi -> Pi.
-1. ALPHA    drivetoPoint(double x, double y, double theta);  Drives to a given point, provide x, y, and theta. 
+1. float ultrasonicDistance1() -> Returns the value in inches of the left ultrasonic sensor
+1. float ultrasonicDistance2() -> Returns the value in inches of the right ultrasonic sensor
+1. float unifiedUltrasonicClosest() -> Returns the lower of ultrasonicDistance1() and ultrasonicDistance2()
+
+1. int getState() -> Returns the current state of the system state machine
+
+1. void connectCheck() -> Polls the ENES 100 library and checks if the robot is connected, if it is not retry the begin statement.
+1. void driveOverLog() -> Drives the robot forward until the x coordinate is over the log and into the destinatation zone.
+1. void fullScore() -> Completes the full scoring sequence, calling squareWaveRead(), detectBField(), changing the servo position and moving the pinion via pinionDrive(int pwm)
+1. void initiaizeProgram(bool connectToENES) -> Called on Arduino startup, connects the serial monitor, if connectToENES is true it will establish a connection to the ENES 100 service.
+1. void incrementState() -> Increments the state machine variable by 1
+1. void obstacleNavigate() -> Turns to angle 0, then drives forward briefly, next drives the bottom arena wall and turns to face the destination zone, then drives along the wall until getting to x = 2.55. Then calls the driveOverLog() function.
+1. void pathfindToObjective() -> Determines starting position and then turns to face the opposite starting box, drives forward to a point right before the pylon, then drives forward slowly towards the objective. 
+1. void pinionDrive(int pwm) -> runs the pinion motor at the given pwm value, a negative value will result in driving backward.
+1. void portConfiguration() -> Called on Arduino startup, configures the input and output ports for driving motors, servos, and sensors, also sets the servo to the starting position
+1. void runProgram(bool value) -> if the value is true sets the state machine value to 1, if false sets it to -1 preventing the state machine from starting.
+1. void serialCommunication() -> Called every main loop run, checks the serial queue from the USB port and runs a command based on the retrived serial data. Commands are listed below. 
+    - "init" sets the state variable to 1, begining the state machine
+    - "obstaclenav" calls the obstacleNavigate() function
+    - "test" calls the pathfindToObjective, then score function to test the first part of a run
+    - "claw" moves the claw servo for 5 seconds then moves it back
+    - "pinion" drives the pinion down at 60% speed for 3 seconds
+    - "b-field"  runs the detectBField() function
+    - "score" runs the fullScore() function
+    - "pid" turns to angle 0
+    - "log" runs the driveOverLog() function
+    - "motor test" tests the driving motors by driving them at various speeds and in both directions
+    - "sensor test" prints to serial monitor the current ultrasonic sensor values
+    - "square wave" runs the squareWaveRead() function
+    - "wifi data" prints to serial monitor the current ENES 100 coordinate values
+1. void stop() -> stops driving motors
+1. void tankDrive(int pwm) -> drives the drivebase motors at the given pwm value, a negative value will result in driving backward.
+1. void tankDriveWallRun(int pwm) -> drives the drivebase motors at the given pwm value, but the right motor is driven at half of the pwm value.
+1. void tankTurn(int pwm) -> turns the robot at the given pwm value a positive value turns the robot right and a negative one turns it left. 
+1. void turnToAngle(float angle) -> Uses a PID controller to drive down the error between the current angle and the target angle, also does data filtering on the position data being provided by ENES 100
