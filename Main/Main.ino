@@ -2,8 +2,8 @@
 
 
 void setup() {
-bool runAuton = true;
-bool connecttoENES = true;
+bool runAuton = false;
+bool connecttoENES = false;
 
 
 runProgram(runAuton);

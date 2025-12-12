@@ -139,7 +139,7 @@ void pathfindToObjective(){
     switch (top) {
         case true:
             turnToAngle(-PI / 2);
-            driveToPoint(0.26, 0.85, -PI / 2);
+            driveToPoint(0.26, 0.87, -PI / 2);
             delay(100);
             turnToAngle(-PI / 2);
             delay(100);
@@ -652,11 +652,6 @@ bool obstacleNavigate(){
         tankDriveWallRun(175);
     }
     stop();
-    turnToAngle(.1);
-    delay(100);
-    turnToAngle(.1);
-    delay(100);
-    turnToAngle(.1);
     driveOverLog();
 }
 
