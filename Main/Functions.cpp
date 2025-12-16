@@ -214,7 +214,6 @@ void fullScore(){
     delay(2500);
     clawServo.write(-20);
     pinionDrive(0);
-    squareWaveRead();
     if(!squareWaveRead()){
         clawServo.write(24);
         pinionDrive(-255);
