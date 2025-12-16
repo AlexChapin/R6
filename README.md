@@ -5,6 +5,8 @@ Code for ENES 100 Section 1101 Team 2
 1. All executive level functions should be called from the Main.ino file
 2. All functions are declared by name in Functions.h
 3. The actual code for the functions exist in Functions.cpp
+![Software Structure](code_structure.svg)
+
 
 ## Functionality
 1. boolean detectBField() -> Reads the magnetic field from the B-Field Sensor and reports it to the ENES 100 system. 
